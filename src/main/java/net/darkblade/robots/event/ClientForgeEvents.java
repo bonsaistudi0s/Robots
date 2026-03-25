@@ -25,10 +25,11 @@ public class ClientForgeEvents {
 
     @SubscribeEvent
     public static void onModelRotation(ModelRotationEvent<?> event) {
+        // Cancel setupRotations entirely. The layer already applied the correct
+        // interpolated rotation via the bone chain. Adding another rotation here
+        // would cause a desfase (the small left/right wobble with mouse movement).
         if (event.getEntity() instanceof Player player
-                && player.getVehicle() instanceof TankMechEntity mech) {
-            float mechYaw = mech.yBodyRot;
-            event.getPoseStack().mulPose(Axis.YP.rotationDegrees(180.0F - mechYaw));
+                && player.getVehicle() instanceof TankMechEntity) {
             event.setCanceled(true);
         }
     }

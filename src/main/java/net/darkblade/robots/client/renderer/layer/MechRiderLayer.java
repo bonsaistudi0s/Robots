@@ -83,10 +83,10 @@ public class MechRiderLayer extends GeoRenderLayer<TankMechEntity> {
             }
 
             if (chainOk) {
-                // Undo the 180-bodyYaw rotation we applied in Step 1.
-                // The PlayerRenderer (via our onModelRotation event) will re-apply
-                // 180-mechYaw for the player's orientation.
-                poseStack.mulPose(Axis.YP.rotationDegrees(-(180.0F - bodyYaw)));
+                // DO NOT undo the 180-bodyYaw rotation here.
+                // Instead, cancel setupRotations entirely in onModelRotation.
+                // This way the only yaw rotation comes from Step 1 (properly interpolated),
+                // with no desfase from a second non-interpolated rotation.
 
                 poseStack.translate(SEAT_OFFSET_X, SEAT_OFFSET_Y, SEAT_OFFSET_Z);
 
