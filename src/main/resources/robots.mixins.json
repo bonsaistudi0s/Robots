@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.darkblade.robots.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "robots.refmap.json",
+  "client": [
+    "HumanoidModelMixin",
+    "LivingEntityRendererMixin"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}

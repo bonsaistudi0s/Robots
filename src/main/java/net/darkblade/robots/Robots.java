@@ -1,8 +1,16 @@
 package net.darkblade.robots;
+
 import com.mojang.logging.LogUtils;
+import net.darkblade.robots.client.renderer.TankMechRenderer;
+import net.darkblade.robots.entity.RobotsEntitys;
+import net.darkblade.robots.entity.TankMechEntity;
+import net.darkblade.robots.item.RobotsItems;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
+import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -13,48 +21,48 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
 @Mod(Robots.MODID)
-public class Robots
-{
+public class Robots {
 
     public static final String MODID = "robots";
-
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public Robots(FMLJavaModLoadingContext context)
-    {
+    public Robots(FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();
 
+        RobotsEntitys.register(modEventBus);
+        RobotsItems.register(modEventBus);
+
         modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(this::addCreative);
+        modEventBus.addListener(this::registerEntityAttributes);
 
         MinecraftForge.EVENT_BUS.register(this);
-
-        modEventBus.addListener(this::addCreative);
-
     }
 
-    private void commonSetup(final FMLCommonSetupEvent event)
-    {
-
+    private void registerEntityAttributes(EntityAttributeCreationEvent event) {
+        event.put(RobotsEntitys.TANK_MECH.get(), TankMechEntity.createAttributes().build());
     }
 
-    private void addCreative(BuildCreativeModeTabContentsEvent event)
-    {
+    private void commonSetup(final FMLCommonSetupEvent event) { }
 
+    private void addCreative(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
+            event.accept(RobotsItems.TANK_MECH_SPAWN_EGG);
+        }
     }
 
     @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event)
-    {
+    public void onServerStarting(ServerStartingEvent event) { }
 
-    }
 
     @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class ClientModEvents
-    {
+    public static class ClientModEvents {
         @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event)
-        {
+        public static void onClientSetup(FMLClientSetupEvent event) { }
 
+        @SubscribeEvent
+        public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
+            event.registerEntityRenderer(RobotsEntitys.TANK_MECH.get(), TankMechRenderer::new);
         }
     }
 }
