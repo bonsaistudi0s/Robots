@@ -20,6 +20,8 @@ import net.minecraft.world.entity.ai.goal.*;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.Cow;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -177,6 +179,23 @@ public class TankMechEntity extends BaseRobotEntity implements GeoEntity {
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        ItemStack itemstack = player.getItemInHand(hand);
+
+        if (this.getMechState() == STATE_DEACTIVATED) {
+            if (itemstack.getItem() instanceof DyeItem dyeItem) {
+                if (!this.level().isClientSide()) {
+                    this.setDyeColor(dyeItem.getDyeColor());
+
+                    if (!player.getAbilities().instabuild) {
+                        itemstack.shrink(1);
+                    }
+
+                    this.playSound(net.minecraft.sounds.SoundEvents.DYE_USE, 1.0F, 1.0F);
+                }
+                return InteractionResult.sidedSuccess(this.level().isClientSide());
+            }
+        }
+
         if (!this.level().isClientSide() && hand == InteractionHand.MAIN_HAND) {
             int state = this.getMechState();
 
