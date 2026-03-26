@@ -2,13 +2,19 @@ package net.darkblade.robots.event;
 
 import com.mojang.math.Axis;
 import net.darkblade.robots.Robots;
+import net.darkblade.robots.client.RobotsKeybindings;
 import net.darkblade.robots.client.renderer.layer.MechRiderLayer;
 import net.darkblade.robots.entity.TankMechEntity;
 import net.darkblade.robots.event.custom.ModelRotationEvent;
 import net.darkblade.robots.event.custom.PlayerPoseEvent;
+import net.darkblade.robots.network.MechAttackC2SPacket;
+import net.darkblade.robots.network.MechShootC2SPacket;
+import net.darkblade.robots.network.RobotsPackets;
+import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -61,6 +67,21 @@ public class ClientForgeEvents {
             m.body.zRot = 0;
 
             event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onKeyInput(InputEvent.Key event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && mc.player.getVehicle() instanceof TankMechEntity) {
+
+            while (RobotsKeybindings.MECH_ATTACK.consumeClick()) {
+                RobotsPackets.INSTANCE.sendToServer(new MechAttackC2SPacket());
+            }
+
+            while (RobotsKeybindings.MECH_SHOOT.consumeClick()) {
+                RobotsPackets.INSTANCE.sendToServer(new MechShootC2SPacket());
+            }
         }
     }
 }

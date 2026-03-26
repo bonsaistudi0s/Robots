@@ -1,13 +1,16 @@
 package net.darkblade.robots;
 
 import com.mojang.logging.LogUtils;
+import net.darkblade.robots.client.RobotsKeybindings;
 import net.darkblade.robots.client.renderer.TankMechRenderer;
 import net.darkblade.robots.entity.RobotsEntitys;
 import net.darkblade.robots.entity.TankMechEntity;
 import net.darkblade.robots.item.RobotsItems;
+import net.darkblade.robots.network.RobotsPackets;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
@@ -43,7 +46,11 @@ public class Robots {
         event.put(RobotsEntitys.TANK_MECH.get(), TankMechEntity.createAttributes().build());
     }
 
-    private void commonSetup(final FMLCommonSetupEvent event) { }
+    private void commonSetup(final FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            RobotsPackets.register();
+        });
+    }
 
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.SPAWN_EGGS) {
@@ -63,6 +70,11 @@ public class Robots {
         @SubscribeEvent
         public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
             event.registerEntityRenderer(RobotsEntitys.TANK_MECH.get(), TankMechRenderer::new);
+        }
+
+        @SubscribeEvent
+        public static void onKeyRegister(RegisterKeyMappingsEvent event) {
+            event.register(RobotsKeybindings.MECH_ATTACK);
         }
     }
 }

@@ -1,6 +1,8 @@
 package net.darkblade.robots.entity;
 
 import net.darkblade.robots.entity.ai.MechMeleeAttackGoal;
+import net.darkblade.robots.entity.controller.MechManualAttackController;
+import net.darkblade.robots.entity.controller.MechRangedAttackController;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -36,12 +38,16 @@ public class TankMechEntity extends PathfinderMob implements GeoEntity {
 
     private static final EntityDataAccessor<Integer> MECH_STATE = SynchedEntityData.defineId(TankMechEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_ATTACKING = SynchedEntityData.defineId(TankMechEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_RANGED_STATE = SynchedEntityData.defineId(TankMechEntity.class, EntityDataSerializers.INT);
 
     public static final int STATE_DEACTIVATED = 0;
     public static final int STATE_ACTIVATING = 1;
     public static final int STATE_ACTIVE = 2;
 
     private int activationTicks = 0;
+
+    private final MechManualAttackController manualAttackController = new MechManualAttackController(this);
+    private final MechRangedAttackController rangedAttackController = new MechRangedAttackController(this);
 
     public TankMechEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -69,12 +75,17 @@ public class TankMechEntity extends PathfinderMob implements GeoEntity {
         super.defineSynchedData();
         this.entityData.define(MECH_STATE, STATE_DEACTIVATED);
         this.entityData.define(DATA_ATTACKING, false);
+        this.entityData.define(DATA_RANGED_STATE, 0);
     }
 
     public int getMechState() { return this.entityData.get(MECH_STATE); }
     public void setMechState(int state) { this.entityData.set(MECH_STATE, state); }
+
     public boolean isAttacking() { return this.entityData.get(DATA_ATTACKING); }
     public void setAttacking(boolean attacking) { this.entityData.set(DATA_ATTACKING, attacking); }
+
+    public int getRangedState() { return this.entityData.get(DATA_RANGED_STATE); }
+    public void setRangedState(int state) { this.entityData.set(DATA_RANGED_STATE, state); }
 
     @Override
     public void addAdditionalSaveData(CompoundTag compound) {
@@ -95,27 +106,25 @@ public class TankMechEntity extends PathfinderMob implements GeoEntity {
         /*
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, new MechMeleeAttackGoal<>(
-                this,
-                3.0,
-                2.0,
-                3.5,
-                0.0,
-                0.0,
-                2.0,
-                2.0,
-                1.2,
-                18,
-                new int[]{4, 5, 6},
-                0,
-                this::setAttacking
+                this, 3.0, 2.0, 3.5, 0.0, 0.0, 2.0, 5.0, 1.2, 18, new int[]{4, 5, 6}, 0, this::setAttacking
         ));
-
         this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 1.0D));
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 6.0F));
         this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
-
         this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Cow.class, true));
-         */
+        */
+    }
+
+    public void triggerManualAttack() {
+        if (!this.level().isClientSide() && this.getMechState() == STATE_ACTIVE) {
+            this.manualAttackController.trigger();
+        }
+    }
+
+    public void triggerManualShoot() {
+        if (!this.level().isClientSide() && this.getMechState() == STATE_ACTIVE) {
+            this.rangedAttackController.trigger();
+        }
     }
 
     // ─────────── Riding ───────────
@@ -174,18 +183,26 @@ public class TankMechEntity extends PathfinderMob implements GeoEntity {
     @Override
     public void tick() {
         super.tick();
+
         if (!this.level().isClientSide()) {
             int state = this.getMechState();
+
             if (state == STATE_DEACTIVATED || state == STATE_ACTIVATING) {
                 this.setNoAi(true);
             } else {
                 this.setNoAi(this.getControllingPassenger() != null);
             }
+
             if (state == STATE_ACTIVATING) {
                 this.activationTicks++;
                 if (this.activationTicks >= 58) {
                     this.setMechState(STATE_ACTIVE);
                 }
+            }
+
+            if (state == STATE_ACTIVE) {
+                this.manualAttackController.tick();
+                this.rangedAttackController.tick();
             }
         }
     }
@@ -208,6 +225,8 @@ public class TankMechEntity extends PathfinderMob implements GeoEntity {
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "movementController", 5, this::movementPredicate));
         controllers.add(new AnimationController<>(this, "attackController", 2, this::attackPredicate));
+        controllers.add(new AnimationController<>(this, "aimController", 3, this::aimPredicate));
+        controllers.add(new AnimationController<>(this, "shootOverlay", 0, this::shootOverlayPredicate));
     }
 
     private PlayState movementPredicate(AnimationState<TankMechEntity> event) {
@@ -239,9 +258,52 @@ public class TankMechEntity extends PathfinderMob implements GeoEntity {
         return PlayState.STOP;
     }
 
+    private int prevRangedState = 0;
+
+    private PlayState aimPredicate(AnimationState<TankMechEntity> event) {
+        int state = this.getRangedState();
+        AnimationController<TankMechEntity> ctrl = event.getController();
+
+        if (state >= 1 && state <= 3) {
+            ctrl.transitionLength(3);
+            ctrl.setAnimation(
+                    RawAnimation.begin().thenPlayAndHold("animation.tank_mech.aim")
+            );
+            prevRangedState = state;
+            return PlayState.CONTINUE;
+        }
+        else if (state == 4) {
+            if (prevRangedState != 4) {
+                ctrl.transitionLength(0);
+                ctrl.setAnimation(
+                        RawAnimation.begin().thenPlay("animation.tank_mech.aim_off")
+                );
+            }
+            prevRangedState = 4;
+            return PlayState.CONTINUE;
+        }
+
+        prevRangedState = 0;
+        ctrl.transitionLength(3);
+        ctrl.forceAnimationReset();
+        return PlayState.STOP;
+    }
+
+    private PlayState shootOverlayPredicate(AnimationState<TankMechEntity> event) {
+        if (this.getRangedState() == 2) {
+            event.getController().setAnimation(
+                    RawAnimation.begin().thenPlay("animation.tank_mech.shoot_hand")
+            );
+            return PlayState.CONTINUE;
+        }
+
+        event.getController().forceAnimationReset();
+        return PlayState.STOP;
+    }
+
     @Override
     public double getPassengersRidingOffset() {
-        return 2.5;
+        return 3.5;
     }
 
     @Override
