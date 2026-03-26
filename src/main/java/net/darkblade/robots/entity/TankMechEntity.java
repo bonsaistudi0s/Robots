@@ -92,8 +92,8 @@ public class TankMechEntity extends PathfinderMob implements GeoEntity {
 
     @Override
     protected void registerGoals() {
-        this.goalSelector.addGoal(1, new FloatGoal(this));
         /*
+        this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(2, new MechMeleeAttackGoal<>(
                 this,
                 3.0,
@@ -109,12 +109,13 @@ public class TankMechEntity extends PathfinderMob implements GeoEntity {
                 0,
                 this::setAttacking
         ));
-         */
+
         this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 1.0D));
         this.goalSelector.addGoal(4, new LookAtPlayerGoal(this, Player.class, 6.0F));
         this.goalSelector.addGoal(5, new RandomLookAroundGoal(this));
 
-        //this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Cow.class, true));
+        this.targetSelector.addGoal(1, new NearestAttackableTargetGoal<>(this, Cow.class, true));
+         */
     }
 
     // ─────────── Riding ───────────

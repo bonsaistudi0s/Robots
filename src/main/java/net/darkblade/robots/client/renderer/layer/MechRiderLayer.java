@@ -24,22 +24,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Renders the player on the "player" bone of the mech.
- * Uses the same approach as SMOP's NirasRiderLayer: navigate the bone hierarchy
- * with translateAndRotate to reach the seat bone, so the player follows animations
- * and stays fixed (no circular movement).
- */
 public class MechRiderLayer extends GeoRenderLayer<TankMechEntity> {
 
     public static final Set<UUID> BLOCKED_RENDERS = new HashSet<>();
 
-    // Fine-tune offsets applied at the end (in the bone's local space)
     private static final float SEAT_OFFSET_X = 0.0f;
     private static final float SEAT_OFFSET_Y = 3.0f;
     private static final float SEAT_OFFSET_Z = 0.0f;
 
-    // Bone chain from root to seat: main -> body -> body_2 -> player
     private static final String[] BONE_CHAIN = {"main", "body", "body_2", "player"};
 
     public MechRiderLayer(GeoRenderer<TankMechEntity> entityRendererIn) {
@@ -63,18 +55,10 @@ public class MechRiderLayer extends GeoRenderLayer<TankMechEntity> {
 
             poseStack.pushPose();
 
-            // === Step 1: Re-enter GeckoLib's model-space ===
-            // The layer's poseStack is OUTSIDE actuallyRender's push/pop.
-            // We need to re-apply the same transforms that actuallyRender does
-            // before rendering bones, so that bone positions are correct.
-            // (Same as LivingEntityRenderer: setupRotations + scale + translate)
             float bodyYaw = Mth.lerp(partialTick, animatable.yBodyRotO, animatable.yBodyRot);
             poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - bodyYaw));
             poseStack.translate(0.0F, 0.01F, 0.0F);
 
-            // === Step 2: Navigate the bone chain (like SMOP's translateAndRotate) ===
-            // Each bone's position/rotation has been updated by GeckoLib's animation processor,
-            // so this automatically follows animations (idle breathing, walk, etc.)
             boolean chainOk = true;
             for (String boneName : BONE_CHAIN) {
                 GeoBone bone = this.getGeoModel().getBone(boneName).orElse(null);
@@ -83,10 +67,6 @@ public class MechRiderLayer extends GeoRenderLayer<TankMechEntity> {
             }
 
             if (chainOk) {
-                // DO NOT undo the 180-bodyYaw rotation here.
-                // Instead, cancel setupRotations entirely in onModelRotation.
-                // This way the only yaw rotation comes from Step 1 (properly interpolated),
-                // with no desfase from a second non-interpolated rotation.
 
                 poseStack.translate(SEAT_OFFSET_X, SEAT_OFFSET_Y, SEAT_OFFSET_Z);
 
