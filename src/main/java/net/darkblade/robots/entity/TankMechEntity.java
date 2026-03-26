@@ -1,6 +1,7 @@
 package net.darkblade.robots.entity;
 
 import net.darkblade.robots.entity.ai.MechMeleeAttackGoal;
+import net.darkblade.robots.entity.controller.MechArrowAttackController;
 import net.darkblade.robots.entity.controller.MechManualAttackController;
 import net.darkblade.robots.entity.controller.MechRangedAttackController;
 import net.minecraft.nbt.CompoundTag;
@@ -39,6 +40,7 @@ public class TankMechEntity extends BaseRobotEntity implements GeoEntity {
     private static final EntityDataAccessor<Integer> MECH_STATE = SynchedEntityData.defineId(TankMechEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_ATTACKING = SynchedEntityData.defineId(TankMechEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> DATA_RANGED_STATE = SynchedEntityData.defineId(TankMechEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_ARROW_STATE = SynchedEntityData.defineId(TankMechEntity.class, EntityDataSerializers.INT);
 
     public static final int STATE_DEACTIVATED = 0;
     public static final int STATE_ACTIVATING = 1;
@@ -48,6 +50,7 @@ public class TankMechEntity extends BaseRobotEntity implements GeoEntity {
 
     private final MechManualAttackController manualAttackController = new MechManualAttackController(this);
     private final MechRangedAttackController rangedAttackController = new MechRangedAttackController(this);
+    private final MechArrowAttackController arrowAttackController = new net.darkblade.robots.entity.controller.MechArrowAttackController(this);
 
     public TankMechEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -76,6 +79,7 @@ public class TankMechEntity extends BaseRobotEntity implements GeoEntity {
         this.entityData.define(MECH_STATE, STATE_DEACTIVATED);
         this.entityData.define(DATA_ATTACKING, false);
         this.entityData.define(DATA_RANGED_STATE, 0);
+        this.entityData.define(DATA_ARROW_STATE, 0);
     }
 
     public int getMechState() { return this.entityData.get(MECH_STATE); }
@@ -86,6 +90,9 @@ public class TankMechEntity extends BaseRobotEntity implements GeoEntity {
 
     public int getRangedState() { return this.entityData.get(DATA_RANGED_STATE); }
     public void setRangedState(int state) { this.entityData.set(DATA_RANGED_STATE, state); }
+
+    public int getArrowState() { return this.entityData.get(DATA_ARROW_STATE); }
+    public void setArrowState(int state) { this.entityData.set(DATA_ARROW_STATE, state); }
 
     @Override
     public void addAdditionalSaveData(CompoundTag compound) {
@@ -121,9 +128,15 @@ public class TankMechEntity extends BaseRobotEntity implements GeoEntity {
         }
     }
 
-    public void triggerManualShoot() {
+    public void triggerManualShoot(Vec3 spawnPos) {
         if (!this.level().isClientSide() && this.getMechState() == STATE_ACTIVE) {
-            this.rangedAttackController.trigger();
+            this.rangedAttackController.trigger(spawnPos);
+        }
+    }
+
+    public void triggerManualArrow(Vec3 spawnPos) {
+        if (!this.level().isClientSide() && this.getMechState() == STATE_ACTIVE) {
+            this.arrowAttackController.trigger(spawnPos);
         }
     }
 
@@ -203,6 +216,7 @@ public class TankMechEntity extends BaseRobotEntity implements GeoEntity {
             if (state == STATE_ACTIVE) {
                 this.manualAttackController.tick();
                 this.rangedAttackController.tick();
+                this.arrowAttackController.tick();
             }
         }
     }
@@ -227,6 +241,7 @@ public class TankMechEntity extends BaseRobotEntity implements GeoEntity {
         controllers.add(new AnimationController<>(this, "attackController", 2, this::attackPredicate));
         controllers.add(new AnimationController<>(this, "aimController", 3, this::aimPredicate));
         controllers.add(new AnimationController<>(this, "shootOverlay", 0, this::shootOverlayPredicate));
+        controllers.add(new AnimationController<>(this, "arrowController", 0, this::arrowPredicate)); // AÑADIDO CONTROLADOR
     }
 
     private PlayState movementPredicate(AnimationState<TankMechEntity> event) {
@@ -304,6 +319,15 @@ public class TankMechEntity extends BaseRobotEntity implements GeoEntity {
             return PlayState.CONTINUE;
         }
 
+        event.getController().forceAnimationReset();
+        return PlayState.STOP;
+    }
+
+    private PlayState arrowPredicate(AnimationState<TankMechEntity> event) {
+        if (this.getArrowState() == 1) {
+            event.getController().setAnimation(RawAnimation.begin().thenPlay("animation.tank_mech.shoot"));
+            return PlayState.CONTINUE;
+        }
         event.getController().forceAnimationReset();
         return PlayState.STOP;
     }

@@ -3,16 +3,20 @@ package net.darkblade.robots.event;
 import com.mojang.math.Axis;
 import net.darkblade.robots.Robots;
 import net.darkblade.robots.client.RobotsKeybindings;
+import net.darkblade.robots.client.renderer.TankMechRenderer;
 import net.darkblade.robots.client.renderer.layer.MechRiderLayer;
 import net.darkblade.robots.entity.TankMechEntity;
 import net.darkblade.robots.event.custom.ModelRotationEvent;
 import net.darkblade.robots.event.custom.PlayerPoseEvent;
 import net.darkblade.robots.network.MechAttackC2SPacket;
+import net.darkblade.robots.network.MechShootArrowC2SPacket;
 import net.darkblade.robots.network.MechShootC2SPacket;
 import net.darkblade.robots.network.RobotsPackets;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
@@ -73,14 +77,36 @@ public class ClientForgeEvents {
     @SubscribeEvent
     public static void onKeyInput(InputEvent.Key event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null && mc.player.getVehicle() instanceof TankMechEntity) {
+        if (mc.player != null && mc.player.getVehicle() instanceof TankMechEntity mech) {
 
             while (RobotsKeybindings.MECH_ATTACK.consumeClick()) {
                 RobotsPackets.INSTANCE.sendToServer(new MechAttackC2SPacket());
             }
 
             while (RobotsKeybindings.MECH_SHOOT.consumeClick()) {
-                RobotsPackets.INSTANCE.sendToServer(new MechShootC2SPacket());
+                EntityRenderer<?> renderer = mc.getEntityRenderDispatcher().getRenderer(mech);
+
+                if (renderer instanceof TankMechRenderer tankRenderer) {
+                    Vec3 gunPos = tankRenderer.getLastHandgunBoneWorldPos();
+
+                    if (gunPos == null) gunPos = mech.position().add(1.2, 2.0, 1.5);
+
+                    RobotsPackets.INSTANCE.sendToServer(new MechShootC2SPacket(gunPos.x, gunPos.y, gunPos.z));
+                }
+            }
+
+            while (RobotsKeybindings.MECH_SHOOT_ARROW.consumeClick()) {
+                EntityRenderer<?> renderer = mc.getEntityRenderDispatcher().getRenderer(mech);
+
+                if (renderer instanceof TankMechRenderer tankRenderer) {
+                    Vec3 laserPos = tankRenderer.getLastLaserBoneWorldPos();
+
+                    if (laserPos == null) {
+                        laserPos = mech.position().add(0, 2.5, 0);
+                    }
+
+                    RobotsPackets.INSTANCE.sendToServer(new MechShootArrowC2SPacket(laserPos.x, laserPos.y, laserPos.z));
+                }
             }
         }
     }

@@ -3,66 +3,51 @@ package net.darkblade.robots.entity.controller;
 import net.darkblade.robots.entity.TankMechEntity;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.SmallFireball;
+import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public class MechRangedAttackController {
+public class MechArrowAttackController {
 
     private final TankMechEntity mech;
     private int stateTicks = 0;
 
-    // Añadimos la variable para guardar la posición que llega por la red
     private Vec3 networkSpawnPos = null;
 
-    private static final int AIM_IN_TICKS = 9;
-    private static final int SHOOT_TICKS = 5;
-    private static final int POST_SHOOT_WAIT = 20;
-    private static final int AIM_OFF_TICKS = 9;
+    private static final int SHOOT_ANIM_TICKS = 4;
 
-    public MechRangedAttackController(TankMechEntity mech) {
+    public MechArrowAttackController(TankMechEntity mech) {
         this.mech = mech;
     }
 
     public void trigger(Vec3 spawnPos) {
-        int state = this.mech.getRangedState();
+        int state = this.mech.getArrowState();
 
         if (state == 0) {
-            this.mech.setRangedState(1);
-            this.stateTicks = 0;
-            this.networkSpawnPos = spawnPos; // Guardamos por si acaso
-        }
-        else if (state == 1 && this.stateTicks >= AIM_IN_TICKS) {
-            this.mech.setRangedState(2);
+            this.mech.setArrowState(1);
             this.stateTicks = 0;
             this.networkSpawnPos = spawnPos;
-            fireProjectile();
+            fireArrow();
         }
     }
 
     public void tick() {
-        int state = this.mech.getRangedState();
+        int state = this.mech.getArrowState();
 
-        if (state != 0) {
+        if (state == 1) {
             this.stateTicks++;
 
-            if (state == 2 && this.stateTicks >= SHOOT_TICKS) {
-                this.mech.setRangedState(3);
-                this.stateTicks = 0;
-            }
-            else if (state == 3 && this.stateTicks >= POST_SHOOT_WAIT) {
-                this.mech.setRangedState(4);
-                this.stateTicks = 0;
-            }
-            else if (state == 4 && this.stateTicks >= AIM_OFF_TICKS) {
-                this.mech.setRangedState(0);
+            if (this.stateTicks >= SHOOT_ANIM_TICKS) {
+                this.mech.setArrowState(0);
                 this.stateTicks = 0;
             }
         }
     }
 
-    private void fireProjectile() {
+    private void fireArrow() {
         if (this.mech.level().isClientSide) return;
 
         Vec3 spawnPos;
@@ -72,11 +57,9 @@ public class MechRangedAttackController {
         } else {
             Vec3 forward = Vec3.directionFromRotation(0, this.mech.yBodyRot);
             Vec3 right = new Vec3(-forward.z, 0, forward.x);
-
-            double xOffset = 1.2;
-            double yOffset = 2.0;
-            double zOffset = 1.5;
-
+            double xOffset = -0.8;
+            double yOffset = 2.5;
+            double zOffset = 1.0;
             spawnPos = this.mech.position()
                     .add(right.scale(xOffset))
                     .add(0, yOffset, 0)
@@ -86,7 +69,6 @@ public class MechRangedAttackController {
         Vec3 shootVector;
 
         if (this.mech.getControllingPassenger() instanceof Player player) {
-
             double maxReach = 60.0;
             Vec3 eyePosition = player.getEyePosition();
             Vec3 lookAngle = player.getLookAngle();
@@ -103,19 +85,20 @@ public class MechRangedAttackController {
             );
 
             Vec3 targetPoint = hitResult.getLocation();
-
             shootVector = targetPoint.subtract(spawnPos).normalize();
-
         } else {
             shootVector = this.mech.getLookAngle();
         }
 
-        SmallFireball fireball = new SmallFireball(
-                this.mech.level(), this.mech, shootVector.x, shootVector.y, shootVector.z);
+        Arrow arrow = new net.minecraft.world.entity.projectile.Arrow(this.mech.level(), this.mech);
 
-        fireball.setPos(spawnPos.x, spawnPos.y, spawnPos.z);
-        this.mech.level().addFreshEntity(fireball);
+        arrow.setEffectsFromItem(new ItemStack(Items.ARROW));
 
-        this.mech.playSound(SoundEvents.BLAZE_SHOOT, 1.5F, 1.0F);
+        arrow.setPos(spawnPos.x, spawnPos.y, spawnPos.z);
+        arrow.shoot(shootVector.x, shootVector.y, shootVector.z, 3.0F, 1.0F);
+
+        this.mech.level().addFreshEntity(arrow);
+
+        this.mech.playSound(net.minecraft.sounds.SoundEvents.ARROW_SHOOT, 1.0F, 1.0F / (this.mech.getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
     }
 }

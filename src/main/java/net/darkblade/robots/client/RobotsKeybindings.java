@@ -23,4 +23,12 @@ public class RobotsKeybindings {
             org.lwjgl.glfw.GLFW.GLFW_KEY_H,
             CATEGORY
     );
+
+    public static final net.minecraft.client.KeyMapping MECH_SHOOT_ARROW = new net.minecraft.client.KeyMapping(
+            "key.robots.mech_shoot_arrow",
+            net.minecraftforge.client.settings.KeyConflictContext.IN_GAME,
+            com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM,
+            org.lwjgl.glfw.GLFW.GLFW_KEY_B,
+            CATEGORY
+    );
 }

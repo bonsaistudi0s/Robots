@@ -30,5 +30,11 @@ public class RobotsPackets {
                 .encoder(MechShootC2SPacket::toBytes)
                 .consumerMainThread(MechShootC2SPacket::handle)
                 .add();
+
+        INSTANCE.messageBuilder(MechShootArrowC2SPacket.class, id(), net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER)
+                .decoder(MechShootArrowC2SPacket::new)
+                .encoder(MechShootArrowC2SPacket::toBytes)
+                .consumerMainThread(MechShootArrowC2SPacket::handle)
+                .add();
     }
 }
