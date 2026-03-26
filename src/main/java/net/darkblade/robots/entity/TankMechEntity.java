@@ -32,7 +32,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import org.jetbrains.annotations.Nullable;
 
-public class TankMechEntity extends PathfinderMob implements GeoEntity {
+public class TankMechEntity extends BaseRobotEntity implements GeoEntity {
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -230,6 +230,13 @@ public class TankMechEntity extends PathfinderMob implements GeoEntity {
     }
 
     private PlayState movementPredicate(AnimationState<TankMechEntity> event) {
+
+        if (this.isDeadOrDying()) {
+            event.getController().transitionLength(0);
+            event.getController().setAnimation(RawAnimation.begin().thenPlayAndHold("animation.tank_mech.death"));
+            return PlayState.CONTINUE;
+        }
+
         int state = this.getMechState();
         if (state == STATE_DEACTIVATED) {
             event.getController().transitionLength(0);

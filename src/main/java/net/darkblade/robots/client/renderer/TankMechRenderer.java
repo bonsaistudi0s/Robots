@@ -15,7 +15,7 @@ import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.cache.object.GeoBone;
 
-public class TankMechRenderer extends GeoEntityRenderer<TankMechEntity> {
+public class TankMechRenderer extends BaseRobotRenderer<TankMechEntity> {
 
     private Vec3 lastPlayerBoneWorldPos = null;
 
@@ -25,6 +25,19 @@ public class TankMechRenderer extends GeoEntityRenderer<TankMechEntity> {
         super(renderManager, new TankMechModel());
         this.shadowRadius = 1.0f;
         addRenderLayer(new MechRiderLayer(this));
+    }
+
+    @Override
+    protected float getDeathMaxRotation(TankMechEntity animatable) {
+        return 0.0F;
+    }
+
+    @Override
+    public int getPackedOverlay(TankMechEntity animatable, float u, float partialTick) {
+        if (animatable.isDeadOrDying() || animatable.deathTime > 0) {
+            return net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY;
+        }
+        return super.getPackedOverlay(animatable, u, partialTick);
     }
 
     @Override
