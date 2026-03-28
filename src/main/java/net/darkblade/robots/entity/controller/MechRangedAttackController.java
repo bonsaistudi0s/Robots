@@ -1,9 +1,9 @@
 package net.darkblade.robots.entity.controller;
 
 import net.darkblade.robots.entity.TankMechEntity;
+import net.darkblade.robots.entity.projectile.BigLaserProjectile;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -31,7 +31,7 @@ public class MechRangedAttackController {
         if (state == 0) {
             this.mech.setRangedState(1);
             this.stateTicks = 0;
-            this.networkSpawnPos = spawnPos; // Guardamos por si acaso
+            this.networkSpawnPos = spawnPos;
         }
         else if (state == 1 && this.stateTicks >= AIM_IN_TICKS) {
             this.mech.setRangedState(2);
@@ -110,12 +110,11 @@ public class MechRangedAttackController {
             shootVector = this.mech.getLookAngle();
         }
 
-        SmallFireball fireball = new SmallFireball(
-                this.mech.level(), this.mech, shootVector.x, shootVector.y, shootVector.z);
+        BigLaserProjectile bigLaser = new BigLaserProjectile(this.mech, this.mech.level());
+        bigLaser.setPos(spawnPos.x, spawnPos.y, spawnPos.z);
+        bigLaser.shoot(shootVector.x, shootVector.y, shootVector.z, 2.0F, 0.3F);
 
-        fireball.setPos(spawnPos.x, spawnPos.y, spawnPos.z);
-        this.mech.level().addFreshEntity(fireball);
-
-        this.mech.playSound(SoundEvents.BLAZE_SHOOT, 1.5F, 1.0F);
+        this.mech.level().addFreshEntity(bigLaser);
+        this.mech.playSound(SoundEvents.BLAZE_SHOOT, 1.5F, 0.8F);
     }
 }

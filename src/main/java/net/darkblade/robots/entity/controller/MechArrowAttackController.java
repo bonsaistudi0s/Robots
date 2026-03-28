@@ -1,11 +1,9 @@
 package net.darkblade.robots.entity.controller;
 
 import net.darkblade.robots.entity.TankMechEntity;
+import net.darkblade.robots.entity.projectile.LaserProjectile;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Arrow;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -90,15 +88,11 @@ public class MechArrowAttackController {
             shootVector = this.mech.getLookAngle();
         }
 
-        Arrow arrow = new net.minecraft.world.entity.projectile.Arrow(this.mech.level(), this.mech);
+        LaserProjectile laser = new LaserProjectile(this.mech, this.mech.level());
+        laser.setPos(spawnPos.x, spawnPos.y, spawnPos.z);
+        laser.shoot(shootVector.x, shootVector.y, shootVector.z, 2.5F, 0.5F);
 
-        arrow.setEffectsFromItem(new ItemStack(Items.ARROW));
-
-        arrow.setPos(spawnPos.x, spawnPos.y, spawnPos.z);
-        arrow.shoot(shootVector.x, shootVector.y, shootVector.z, 3.0F, 1.0F);
-
-        this.mech.level().addFreshEntity(arrow);
-
-        this.mech.playSound(net.minecraft.sounds.SoundEvents.ARROW_SHOOT, 1.0F, 1.0F / (this.mech.getRandom().nextFloat() * 0.4F + 1.2F) + 0.5F);
+        this.mech.level().addFreshEntity(laser);
+        this.mech.playSound(SoundEvents.FIRECHARGE_USE, 0.8F, 1.8F);
     }
 }

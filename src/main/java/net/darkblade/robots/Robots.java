@@ -3,6 +3,9 @@ package net.darkblade.robots;
 import com.mojang.logging.LogUtils;
 import net.darkblade.robots.client.RobotsKeybindings;
 import net.darkblade.robots.client.renderer.TankMechRenderer;
+import net.darkblade.robots.client.renderer.projectile.BigLaserRenderer;
+import net.darkblade.robots.client.renderer.projectile.LaserRenderer;
+import net.darkblade.robots.client.renderer.projectile.RocketRenderer;
 import net.darkblade.robots.entity.RobotsEntitys;
 import net.darkblade.robots.entity.TankMechEntity;
 import net.darkblade.robots.item.RobotsItems;
@@ -70,6 +73,9 @@ public class Robots {
         @SubscribeEvent
         public static void registerRenderers(final EntityRenderersEvent.RegisterRenderers event) {
             event.registerEntityRenderer(RobotsEntitys.TANK_MECH.get(), TankMechRenderer::new);
+            event.registerEntityRenderer(RobotsEntitys.LASER.get(), LaserRenderer::new);
+            event.registerEntityRenderer(RobotsEntitys.BIG_LASER.get(), BigLaserRenderer::new);
+            event.registerEntityRenderer(RobotsEntitys.ROCKET.get(), RocketRenderer::new);
         }
 
         @SubscribeEvent

@@ -1,0 +1,30 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.rocket",
+				"texture_width": 64,
+				"texture_height": 64,
+				"visible_bounds_width": 2,
+				"visible_bounds_height": 1.5,
+				"visible_bounds_offset": [0, 0.25, 0]
+			},
+			"bones": [
+				{
+					"name": "main",
+					"pivot": [0, 1, 0],
+					"cubes": [
+						{"origin": [-4, -3, -9], "size": [8, 8, 5], "uv": [0, 19]},
+						{"origin": [-3, -2, -11], "size": [6, 6, 2], "uv": [27, 19]},
+						{"origin": [-3, -2, -4], "size": [6, 6, 12], "uv": [0, 0]},
+						{"origin": [-1, 4, 2], "size": [2, 2, 6], "pivot": [0, 4, 8], "rotation": [7.5, 0, 0], "uv": [27, 28]},
+						{"origin": [-1, -4, 2], "size": [2, 2, 6], "pivot": [0, -2, 8], "rotation": [-7.5, 0, 0], "uv": [0, 33]},
+						{"origin": [3, 0, 2], "size": [2, 2, 6], "pivot": [3, 1, 8], "rotation": [0, 7.5, 0], "uv": [37, 9]},
+						{"origin": [-5, 0, 2], "size": [2, 2, 6], "pivot": [-3, 1, 8], "rotation": [0, -7.5, 0], "uv": [37, 0]}
+					]
+				}
+			]
+		}
+	]
+}
