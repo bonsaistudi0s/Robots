@@ -38,7 +38,7 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
     }
 
     public static AttributeSupplier.Builder createMechAttributes() {
-        return LivingEntity.createLivingAttributes()
+        return PathfinderMob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 100.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.25D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D);
