@@ -9,7 +9,7 @@ public class RobotsFabricClient implements ClientModInitializer {
     public void onInitializeClient() {
         Robots.PROXY = new ClientProxy();
 
-        //Robots.PROXY.registerClientEvents();
+        Robots.PROXY.registerClientEvents();
     }
 
 }

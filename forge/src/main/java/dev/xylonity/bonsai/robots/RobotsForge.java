@@ -22,7 +22,7 @@ public class RobotsForge {
         ConfigComposer.registerConfig(Robots.MOD_ID, RobotsConfig.class);
 
         KnightLibEvents.SERVER.register(RobotsCommonEvents.class);
-        //Parallax.PROXY.registerClientEvents();
+        Robots.PROXY.registerClientEvents();
 
         Robots.init();
     }
