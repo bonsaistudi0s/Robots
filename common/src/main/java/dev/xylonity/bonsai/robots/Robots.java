@@ -1,7 +1,10 @@
 package dev.xylonity.bonsai.robots;
 
+import dev.xylonity.bonsai.robots.network.RobotsNetwork;
 import dev.xylonity.bonsai.robots.platform.RobotsPlatform;
 import dev.xylonity.bonsai.robots.proxy.IProxy;
+import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
+import dev.xylonity.bonsai.robots.registry.RobotsEntities;
 import dev.xylonity.knightlib.api.network.Network;
 import dev.xylonity.knightlib.api.network.NetworkEndpoint;
 import dev.xylonity.knightlib.api.util.ResourceLocations;
@@ -23,7 +26,11 @@ public class Robots {
     public static IProxy PROXY;
 
     public static void init() {
-        ;;
+        RobotsEntities.ENTITIES.init();
+
+        RobotsAbilities.init();
+
+        RobotsNetwork.register();
     }
 
     public static ResourceLocation of(final String path) {
