@@ -1,6 +1,5 @@
 package dev.xylonity.bonsai.robots.common.entity.projectile;
 
-import dev.xylonity.bonsai.robots.client.particle.RobotsParticles;
 import dev.xylonity.bonsai.robots.registry.RobotsEntities;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
