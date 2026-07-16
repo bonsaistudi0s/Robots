@@ -1,11 +1,14 @@
 package dev.xylonity.bonsai.robots.common.entity;
 
 import dev.xylonity.bonsai.robots.common.entity.ability.AbilityManager;
+import dev.xylonity.knightlib.api.util.KnightLibMath;
+import dev.xylonity.knightlib.api.util.ResourceLocations;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.*;
@@ -19,6 +22,10 @@ import org.jetbrains.annotations.Nullable;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.AnimationState;
+import software.bernie.geckolib.core.animation.RawAnimation;
+import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
@@ -28,10 +35,25 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     // Slot for the current ability in use
-    private static final EntityDataAccessor<Integer> DATA_ACTIVE_SLOT =
-            SynchedEntityData.defineId(AbstractMechEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_ACTIVE_SLOT = SynchedEntityData.defineId(AbstractMechEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_SELECTED_SLOT = SynchedEntityData.defineId(AbstractMechEntity.class, EntityDataSerializers.INT);
+
+    private static final EntityDataAccessor<Boolean> DATA_AIMING = SynchedEntityData.defineId(AbstractMechEntity.class, EntityDataSerializers.BOOLEAN);
+
+    // _Current_ energy of the mech
+    private static final EntityDataAccessor<Float> DATA_ENERGY = SynchedEntityData.defineId(AbstractMechEntity.class, EntityDataSerializers.FLOAT);
 
     private final AbilityManager abilityManager = new AbilityManager(this);
+
+    public float clientLegsYaw;
+    public float clientTorsoYaw;
+    public boolean clientYawInitialized;
+
+    public boolean clientLegsReversed;
+    public float clientAimCameraProgress;
+
+    // Internal, used by the respective walking controller (so the walking animation speed depends o nthe actual speed of the mech)
+    private double walkAnimSpeed = 1.0D;
 
     protected AbstractMechEntity(EntityType<? extends AbstractMechEntity> type, Level level) {
         super(type, level);
@@ -61,20 +83,61 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
         this.entityData.set(DATA_ACTIVE_SLOT, slot);
     }
 
+    public int getSelectedSlot() {
+        return this.entityData.get(DATA_SELECTED_SLOT);
+    }
+
+    public void setSelectedSlot(int slot) {
+        this.entityData.set(DATA_SELECTED_SLOT, slot);
+    }
+
+    public boolean isAiming() {
+        return this.entityData.get(DATA_AIMING);
+    }
+
+    public void setAiming(boolean aiming) {
+        this.entityData.set(DATA_AIMING, aiming);
+    }
+
+    public float getEnergy() {
+        return this.entityData.get(DATA_ENERGY);
+    }
+
+    public void setEnergy(float energy) {
+        this.entityData.set(DATA_ENERGY, Mth.clamp(energy, 0.0F, getMaxEnergy()));
+    }
+
+    public float getMaxEnergy() {
+        return 100.0F;
+    }
+
+    public float getEnergyRegenPerTick() {
+        return 0.05F;
+    }
+
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(DATA_ACTIVE_SLOT, -1);
+        this.entityData.define(DATA_SELECTED_SLOT, -1);
+        this.entityData.define(DATA_AIMING, false);
+        this.entityData.define(DATA_ENERGY, getMaxEnergy());
     }
 
     @Override
     public void tick() {
         super.tick();
+
         abilityManager.tick();
+
+        if (!this.level().isClientSide && !abilityManager.isEnergyDrainActive() && this.getEnergy() < this.getMaxEnergy()) {
+            this.setEnergy(this.getEnergy() + this.getEnergyRegenPerTick());
+        }
+
     }
 
     @Override
-    public InteractionResult interactAt(Player player, Vec3 vec, InteractionHand hand) {
+    public @NotNull InteractionResult interactAt(@NotNull Player player, @NotNull Vec3 vec, @NotNull InteractionHand hand) {
         if (!this.isVehicle() && !player.isSecondaryUseActive()) {
             if (!this.level().isClientSide) {
                 player.startRiding(this);
@@ -92,20 +155,30 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
         return this.getFirstPassenger() instanceof Player player ? player : null;
     }
 
-    //@Override
-    //protected void tickRidden(Player player, Vec3 travelVector) {
-    //    super.tickRidden(player, travelVector);
-    //    this.setRot(player.getYRot(), player.getXRot() * 0.5F);
-    //    this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
-    //}
+    @Override
+    protected void tickRidden(@NotNull Player player, @NotNull Vec3 travelVector) {
+        super.tickRidden(player, travelVector);
+        this.setRot(player.getYRot(), player.getXRot() * 0.5F);
+        this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
+    }
 
-    //@Override
-    //protected Vec3 getRiddenInput(Player player, Vec3 travelVector) {
-    //    return new Vec3(player.xxa * 0.5F, 0.0D, player.zza >= 0.0F ? player.zza : player.zza * 0.25F);
-    //}
+    // Caps the speed if the legs aren't looking at the look direction (taking into account the legs might be going backwards)
+    @Override
+    protected @NotNull Vec3 getRiddenInput(Player player, @NotNull Vec3 travelVector) {
+        float zza = player.zza;
+        if (zza < 0.0F && !legsFaceYaw(player.getYRot() + 180.0F)) {
+            zza *= 0.5F;
+        }
+
+        return new Vec3(player.xxa * 0.5F, 0.0D, zza);
+    }
+
+    private boolean legsFaceYaw(float yaw) {
+        return this.clientYawInitialized && Math.abs(KnightLibMath.angleDelta(this.clientLegsYaw, yaw)) < 90.0F;
+    }
 
     @Override
-    protected float getRiddenSpeed(Player player) {
+    protected float getRiddenSpeed(@NotNull Player player) {
         return (float) this.getAttributeValue(Attributes.MOVEMENT_SPEED);
     }
 
@@ -113,22 +186,84 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
     public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         abilityManager.save(tag);
+        tag.putFloat("Energy", getEnergy());
     }
 
     @Override
     public void readAdditionalSaveData(@NotNull CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         abilityManager.load(tag);
+        if (tag.contains("Energy")) {
+            setEnergy(tag.getFloat("Energy"));
+        }
+
+    }
+
+    // Logic below here is set to change, as the primary and secondary abilities (yet to be confirmed) are selected by pressing 4 (assuming there are only
+    // 3 abilities per mech)
+
+    // Left click
+    @Nullable
+    public ResourceLocation getPrimaryAbility() {
+        return null;
+    }
+
+    // Right click
+    @Nullable
+    public ResourceLocation getSecondaryAbility() {
+        return null;
     }
 
     /**
-     * Abilities of this mech per slot (index 0 -> key 1)
+     * Special abilities per slot (index 0 -> key 1)
      */
-    public abstract List<ResourceLocation> getAbilities();
+    public List<ResourceLocation> getSpecialAbilities() {
+        return List.of();
+    }
 
+    /**
+     * Texture for the mech icon (not hardcoded inside the robots abilities so possible external mods can add their own robots and abilities)
+     */
+    public ResourceLocation getAbilityIcon(ResourceLocation abilityId) {
+        return ResourceLocations.of(abilityId.getNamespace(), "textures/gui/ability/" + abilityId.getPath() + ".png");
+    }
+
+    protected abstract RawAnimation getIdleAnim();
+    protected abstract RawAnimation getWalkAnim();
+
+    // Blocks per walk cycle (used to scale the walking animation)
+    protected float getWalkBlocksPerCycle() {
+        return 5.0F;
+    }
+
+    // Walk cycle duration
+    protected float getWalkCycleSeconds() {
+        return 1F;
+    }
+
+    // This is also set to change as there are some mech entities that do now have a walk animation (like the submarine one)
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        ;;
+        controllers.add(new AnimationController<>(this, "movement", 5, this::movementPredicate)
+                .setAnimationSpeedHandler(mech -> mech.walkAnimSpeed));
+    }
+
+    protected PlayState movementPredicate(AnimationState<AbstractMechEntity> state) {
+        final double dx = this.getX() - this.xo;
+        final double dz = this.getZ() - this.zo;
+        final double blocksPerTick = Math.sqrt(dx * dx + dz * dz);
+
+        if (blocksPerTick > 0.01D) {
+            final double target = Mth.clamp(blocksPerTick * 20.0D * getWalkCycleSeconds() / getWalkBlocksPerCycle(), 0.25D, 3.0D);
+            this.walkAnimSpeed += (target - this.walkAnimSpeed) * 0.15D;
+            state.getController().setAnimation(getWalkAnim());
+        }
+        else {
+            this.walkAnimSpeed += (1.0D - this.walkAnimSpeed) * 0.15D;
+            state.getController().setAnimation(getIdleAnim());
+        }
+
+        return PlayState.CONTINUE;
     }
 
     @Override
