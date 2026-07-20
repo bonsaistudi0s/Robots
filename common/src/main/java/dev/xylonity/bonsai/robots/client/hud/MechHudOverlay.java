@@ -91,6 +91,19 @@ public final class MechHudOverlay {
         if (energyWidth > 0) {
             graphics.blit(UI, barX, barY, 0, 35, energyWidth, BAR_HEIGHT);
         }
+
+        // Jump charge (replaces the vanilla jump meter, hidden via GuiMixin)
+        final float jumpCharge = player.getJumpRidingScale();
+        if (jumpCharge > 0.0F) {
+            final int chargeY = barY - 3;
+            graphics.fill(barX, chargeY, barX + BAR_WIDTH, chargeY + 2, 0x66000000);
+            final int chargeWidth = Math.round(BAR_WIDTH * Mth.clamp(jumpCharge, 0.0F, 1.0F));
+            if (chargeWidth > 0) {
+                graphics.fill(barX, chargeY, barX + chargeWidth, chargeY + 2, 0xFFFFD84D);
+            }
+
+        }
+
     }
 
     private static void drawSlot(GuiGraphics graphics, AbstractMechEntity mech, int slot, int x, int y) {

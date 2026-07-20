@@ -25,6 +25,16 @@ public class GuiMixin {
 
     }
 
+    // The vanilla jump-charge meter would overlap the mech energy bar; the charge is drawn by MechHudOverlay instead
+    @Inject(method = "renderJumpMeter", at = @At("HEAD"), cancellable = true)
+    private void robots$hideJumpMeterWhilePiloting(net.minecraft.world.entity.PlayerRideableJumping rideable, GuiGraphics guiGraphics, int x, CallbackInfo ci) {
+        final LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null && player.getVehicle() instanceof AbstractMechEntity mech && mech.getControllingPassenger() == player) {
+            ci.cancel();
+        }
+
+    }
+
     // Renders the vanilla crosshair when controlling a mech
     @Redirect(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z"))
     private boolean robots$showCrosshairWhilePiloting(CameraType cameraType) {

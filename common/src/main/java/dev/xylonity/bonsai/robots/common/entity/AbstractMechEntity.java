@@ -31,7 +31,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
 
-public abstract class AbstractMechEntity extends PathfinderMob implements GeoEntity {
+public abstract class AbstractMechEntity extends PathfinderMob implements GeoEntity, PlayerRideableJumping {
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -63,6 +63,9 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
 
     // Internal, used by the respective walking controller (so the walking animation speed depends o nthe actual speed of the mech)
     private double walkAnimSpeed = 1.0D;
+
+    // Queued riding-jump charge (0..1); set on the controlling client, consumed in tickRidden on the next grounded tick
+    private float playerJumpPendingScale;
 
     protected AbstractMechEntity(EntityType<? extends AbstractMechEntity> type, Level level) {
         super(type, level);
@@ -204,6 +207,57 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
         super.tickRidden(player, travelVector);
         this.setRot(player.getYRot(), player.getXRot() * 0.5F);
         this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
+
+        // Jump physics run on the controlling client, mirroring AbstractHorse
+        if (this.isControlledByLocalInstance() && this.onGround()) {
+            if (this.playerJumpPendingScale > 0.0F) {
+                executeRidersJump(this.playerJumpPendingScale, travelVector);
+            }
+
+            this.playerJumpPendingScale = 0.0F;
+        }
+
+    }
+
+    protected void executeRidersJump(float scale, Vec3 travelVector) {
+        final double vy = getJumpStrength() * scale * this.getBlockJumpFactor() + this.getJumpBoostPower();
+        final Vec3 delta = this.getDeltaMovement();
+        this.setDeltaMovement(delta.x, vy, delta.z);
+        this.hasImpulse = true;
+
+        // Forward momentum kick when jumping while moving
+        if (travelVector.z > 0.0D) {
+            final float sin = Mth.sin(this.getYRot() * Mth.DEG_TO_RAD);
+            final float cos = Mth.cos(this.getYRot() * Mth.DEG_TO_RAD);
+            this.setDeltaMovement(this.getDeltaMovement().add(-0.4F * sin * scale, 0.0D, 0.4F * cos * scale));
+        }
+
+    }
+
+    // Called on the controlling client when the rider releases the jump key; power is the charge in [0, 100]
+    @Override
+    public void onPlayerJump(int jumpPower) {
+        if (!canJump()) {
+            return;
+        }
+
+        this.playerJumpPendingScale = jumpPower >= 90 ? 1.0F : 0.4F + 0.6F * jumpPower / 90.0F;
+    }
+
+    @Override
+    public boolean canJump() {
+        return getJumpAnim() != null && getMechState() == MECH_STATE_ACTIVE;
+    }
+
+    // Server-side counterpart of onPlayerJump; the right spot for effects that need syncing (the animation)
+    @Override
+    public void handleStartJump(int jumpPower) {
+        triggerAnim("jump", "jump");
+    }
+
+    @Override
+    public void handleStopJump() {
+        ;;
     }
 
     // Caps the speed if the legs aren't looking at the look direction (taking into account the legs might be going backwards)
@@ -225,9 +279,28 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
         return this.clientYawInitialized && Math.abs(KnightLibMath.angleDelta(this.clientLegsYaw, yaw)) < 90.0F;
     }
 
+    // Lets the vanilla client start sprinting (double-tap W or sprint key) while piloting; the sprint
+    // state is synced to the server by vanilla itself, no custom input handling needed
+    @Override
+    public boolean canSprint() {
+        return getRunAnim() != null && getMechState() == MECH_STATE_ACTIVE;
+    }
+
+    public boolean isPilotSprinting() {
+        final Player pilot = getPilot();
+        return pilot != null && pilot.isSprinting();
+    }
+
     @Override
     protected float getRiddenSpeed(@NotNull Player player) {
-        return (float) this.getAttributeValue(Attributes.MOVEMENT_SPEED);
+        final float speed = (float) this.getAttributeValue(Attributes.MOVEMENT_SPEED);
+        return player.isSprinting() && canSprint() ? speed * getSprintSpeedMultiplier() : speed;
+    }
+
+    // Mechs take no fall damage; returning false also skips vanilla's propagation of the fall to the pilot
+    @Override
+    public boolean causeFallDamage(float fallDistance, float multiplier, @NotNull DamageSource source) {
+        return false;
     }
 
     @Override
@@ -320,6 +393,27 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
     // One-shot boot-up animation played while the mech transitions into a controllable state
     protected abstract RawAnimation getActivateAnim();
 
+    // Sprinting animation; mechs without one (null) simply can't sprint
+    @Nullable
+    protected RawAnimation getRunAnim() {
+        return null;
+    }
+
+    protected float getSprintSpeedMultiplier() {
+        return 1.5F;
+    }
+
+    // Jumping animation; mechs without one (null) simply can't jump
+    @Nullable
+    protected RawAnimation getJumpAnim() {
+        return null;
+    }
+
+    // Vertical velocity at full charge (vanilla horses sit around 0.7; ~0.9 clears roughly 5 blocks)
+    protected float getJumpStrength() {
+        return 0.9F;
+    }
+
     // Blocks per walk cycle (used to scale the walking animation)
     protected float getWalkBlocksPerCycle() {
         return 5.0F;
@@ -328,6 +422,15 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
     // Walk cycle duration
     protected float getWalkCycleSeconds() {
         return 1F;
+    }
+
+    // Same as the walk cycle params but for the sprinting animation
+    protected float getRunBlocksPerCycle() {
+        return getWalkBlocksPerCycle() * getSprintSpeedMultiplier() * getRunCycleSeconds() / getWalkCycleSeconds();
+    }
+
+    protected float getRunCycleSeconds() {
+        return getWalkCycleSeconds();
     }
 
     // Default bone-blending ticks between animations of the movement controller. transitionLength is a mutable
@@ -339,6 +442,13 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "movement", MOVEMENT_TRANSITION_TICKS, this::movementPredicate)
                 .setAnimationSpeedHandler(mech -> mech.walkAnimSpeed));
+
+        final RawAnimation jumpAnim = getJumpAnim();
+        if (jumpAnim != null) {
+            controllers.add(new AnimationController<>(this, "jump", 2, state -> PlayState.STOP)
+                    .triggerableAnim("jump", jumpAnim));
+        }
+
     }
 
     protected PlayState movementPredicate(AnimationState<AbstractMechEntity> state) {
@@ -368,9 +478,15 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
         final double blocksPerTick = Math.sqrt(dx * dx + dz * dz);
 
         if (blocksPerTick > 0.01D) {
-            final double target = Mth.clamp(blocksPerTick * 20.0D * getWalkCycleSeconds() / getWalkBlocksPerCycle(), 0.25D, 3.0D);
+            final RawAnimation runAnim = getRunAnim();
+            final boolean running = runAnim != null && isPilotSprinting();
+
+            final float cycleSeconds = running ? getRunCycleSeconds() : getWalkCycleSeconds();
+            final float blocksPerCycle = running ? getRunBlocksPerCycle() : getWalkBlocksPerCycle();
+
+            final double target = Mth.clamp(blocksPerTick * 20.0D * cycleSeconds / blocksPerCycle, 0.25D, 3.0D);
             this.walkAnimSpeed += (target - this.walkAnimSpeed) * 0.15D;
-            state.getController().setAnimation(getWalkAnim());
+            state.getController().setAnimation(running ? runAnim : getWalkAnim());
         }
         else {
             this.walkAnimSpeed += (1.0D - this.walkAnimSpeed) * 0.15D;
