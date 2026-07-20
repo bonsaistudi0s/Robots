@@ -11,6 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -42,6 +43,14 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
 
     // _Current_ energy of the mech
     private static final EntityDataAccessor<Float> DATA_ENERGY = SynchedEntityData.defineId(AbstractMechEntity.class, EntityDataSerializers.FLOAT);
+
+    private static final EntityDataAccessor<Integer> DATA_MECH_STATE = SynchedEntityData.defineId(AbstractMechEntity.class, EntityDataSerializers.INT);
+
+    public static final int MECH_STATE_DEACTIVATED = 0;
+    public static final int MECH_STATE_ACTIVATING = 1;
+    public static final int MECH_STATE_ACTIVE = 2;
+
+    private int activationTicks;
 
     private final AbilityManager abilityManager = new AbilityManager(this);
 
@@ -115,6 +124,19 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
         return 0.05F;
     }
 
+    public int getMechState() {
+        return this.entityData.get(DATA_MECH_STATE);
+    }
+
+    public void setMechState(int mechState) {
+        this.entityData.set(DATA_MECH_STATE, mechState);
+    }
+
+    // Ticks before the mech is considered booted up and mountable (activate animation length + a short hold)
+    protected int activationDurationTicks() {
+        return 20;
+    }
+
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
@@ -122,6 +144,7 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
         this.entityData.define(DATA_SELECTED_SLOT, -1);
         this.entityData.define(DATA_AIMING, false);
         this.entityData.define(DATA_ENERGY, getMaxEnergy());
+        this.entityData.define(DATA_MECH_STATE, MECH_STATE_DEACTIVATED);
     }
 
     @Override
@@ -134,13 +157,34 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
             this.setEnergy(this.getEnergy() + this.getEnergyRegenPerTick());
         }
 
+        if (!this.level().isClientSide && getMechState() == MECH_STATE_ACTIVATING) {
+            activationTicks++;
+            if (activationTicks >= activationDurationTicks()) {
+                setMechState(MECH_STATE_ACTIVE);
+            }
+
+        }
+
     }
 
     @Override
     public @NotNull InteractionResult interactAt(@NotNull Player player, @NotNull Vec3 vec, @NotNull InteractionHand hand) {
         if (!this.isVehicle() && !player.isSecondaryUseActive()) {
+            final int mechState = getMechState();
+            if (mechState == MECH_STATE_ACTIVATING) {
+                // Already booting up, ignore further clicks until it's done
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
+            }
+
             if (!this.level().isClientSide) {
-                player.startRiding(this);
+                if (mechState == MECH_STATE_DEACTIVATED) {
+                    setMechState(MECH_STATE_ACTIVATING);
+                    activationTicks = 0;
+                }
+                else {
+                    player.startRiding(this);
+                }
+
             }
 
             return InteractionResult.sidedSuccess(this.level().isClientSide);
@@ -165,6 +209,10 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
     // Caps the speed if the legs aren't looking at the look direction (taking into account the legs might be going backwards)
     @Override
     protected @NotNull Vec3 getRiddenInput(Player player, @NotNull Vec3 travelVector) {
+        if (getMechState() != MECH_STATE_ACTIVE) {
+            return Vec3.ZERO;
+        }
+
         float zza = player.zza;
         if (zza < 0.0F && !legsFaceYaw(player.getYRot() + 180.0F)) {
             zza *= 0.5F;
@@ -183,10 +231,38 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
     }
 
     @Override
+    public void die(@NotNull DamageSource cause) {
+        this.ejectPassengers();
+        super.die(cause);
+    }
+
+    // Vanilla tickDeath removes the entity after 20 ticks and lets it keep sliding/turning;
+    // we hold it in place for as long as the death animation needs to play out
+    @Override
+    protected void tickDeath() {
+        this.deathTime++;
+        if (this.deathTime >= deathRemovalTicks()) {
+            this.remove(RemovalReason.KILLED);
+        }
+
+        this.setDeltaMovement(0.0D, this.getDeltaMovement().y, 0.0D);
+        this.setYRot(this.yRotO);
+        this.setYBodyRot(this.yBodyRotO);
+        this.setXRot(this.xRotO);
+    }
+
+    // Ticks the death animation is held for before the entity is actually removed
+    protected int deathRemovalTicks() {
+        return 40;
+    }
+
+    @Override
     public void addAdditionalSaveData(@NotNull CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         abilityManager.save(tag);
         tag.putFloat("Energy", getEnergy());
+        tag.putInt("MechState", getMechState());
+        tag.putInt("ActivationTicks", activationTicks);
     }
 
     @Override
@@ -195,6 +271,12 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
         abilityManager.load(tag);
         if (tag.contains("Energy")) {
             setEnergy(tag.getFloat("Energy"));
+        }
+        if (tag.contains("MechState")) {
+            setMechState(tag.getInt("MechState"));
+        }
+        if (tag.contains("ActivationTicks")) {
+            activationTicks = tag.getInt("ActivationTicks");
         }
 
     }
@@ -230,6 +312,13 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
 
     protected abstract RawAnimation getIdleAnim();
     protected abstract RawAnimation getWalkAnim();
+    protected abstract RawAnimation getDeathAnim();
+
+    // Looping pose the mech sits in before it's been activated (a hold on the first frame of the activate anim)
+    protected abstract RawAnimation getActivateIdleAnim();
+
+    // One-shot boot-up animation played while the mech transitions into a controllable state
+    protected abstract RawAnimation getActivateAnim();
 
     // Blocks per walk cycle (used to scale the walking animation)
     protected float getWalkBlocksPerCycle() {
@@ -241,14 +330,39 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
         return 1F;
     }
 
+    // Default bone-blending ticks between animations of the movement controller. transitionLength is a mutable
+    // field on the controller (not per-transition), so any branch that zeroes it must be undone by the other branches
+    protected static final int MOVEMENT_TRANSITION_TICKS = 5;
+
     // This is also set to change as there are some mech entities that do now have a walk animation (like the submarine one)
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "movement", 5, this::movementPredicate)
+        controllers.add(new AnimationController<>(this, "movement", MOVEMENT_TRANSITION_TICKS, this::movementPredicate)
                 .setAnimationSpeedHandler(mech -> mech.walkAnimSpeed));
     }
 
     protected PlayState movementPredicate(AnimationState<AbstractMechEntity> state) {
+        if (this.isDeadOrDying()) {
+            state.getController().transitionLength(0);
+            state.getController().setAnimation(getDeathAnim());
+            return PlayState.CONTINUE;
+        }
+
+        final int mechState = getMechState();
+        if (mechState == MECH_STATE_DEACTIVATED) {
+            state.getController().transitionLength(0);
+            state.getController().setAnimation(getActivateIdleAnim());
+            return PlayState.CONTINUE;
+        }
+        if (mechState == MECH_STATE_ACTIVATING) {
+            // No blend needed: activate's first frame matches the activate_idle pose exactly
+            state.getController().transitionLength(0);
+            state.getController().setAnimation(getActivateAnim());
+            return PlayState.CONTINUE;
+        }
+
+        state.getController().transitionLength(MOVEMENT_TRANSITION_TICKS);
+
         final double dx = this.getX() - this.xo;
         final double dz = this.getZ() - this.zo;
         final double blocksPerTick = Math.sqrt(dx * dx + dz * dz);

@@ -3,6 +3,7 @@ package dev.xylonity.bonsai.robots.client.event;
 import dev.xylonity.bonsai.robots.Robots;
 import dev.xylonity.bonsai.robots.client.projectile.model.LaserProjectileModel;
 import dev.xylonity.bonsai.robots.client.projectile.renderer.LaserProjectileRenderer;
+import dev.xylonity.bonsai.robots.client.entity.renderer.TallMechRenderer;
 import dev.xylonity.bonsai.robots.client.entity.renderer.TankMechRenderer;
 import dev.xylonity.bonsai.robots.client.hud.MechHudOverlay;
 import dev.xylonity.bonsai.robots.client.util.RobotsClientUtil;
@@ -27,6 +28,7 @@ public class RobotsClientEvents {
     @RegisterEvent
     public static void registerEntityRenderers(final EntityRendererRegistrationEvent event) {
         event.register(RobotsEntities.TANK_MECH, TankMechRenderer::new);
+        event.register(RobotsEntities.TALL_MECH, TallMechRenderer::new);
         event.register(RobotsEntities.LASER_PROJECTILE, LaserProjectileRenderer::new);
         event.register(RobotsEntities.BIG_LASER_PROJECTILE, ctx -> new LaserProjectileRenderer<>(ctx, new LaserProjectileModel<>("big_laser")));
     }

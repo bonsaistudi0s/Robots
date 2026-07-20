@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +26,24 @@ public abstract class AbstractMechRenderer<T extends AbstractMechEntity> extends
 
     protected AbstractMechRenderer(EntityRendererProvider.Context renderManager, GeoModel<T> model) {
         super(renderManager, model);
+    }
+
+    // The death animation itself handles the pose; no need for GeckoLib's vanilla fall-over rotation
+    @Override
+    protected float getDeathMaxRotation(T animatable) {
+        return 0.0F;
+    }
+
+    // Avoids the red damage-flash overlay tinting the model while the death animation plays.
+    // Checked against isDeadOrDying() rather than deathTime, since deathTime only starts
+    // incrementing a tick after death, which left a 1-frame flash right as the death anim kicks in
+    @Override
+    public int getPackedOverlay(T animatable, float u, float partialTick) {
+        if (animatable.isDeadOrDying()) {
+            return OverlayTexture.NO_OVERLAY;
+        }
+
+        return super.getPackedOverlay(animatable, u, partialTick);
     }
 
     @Override

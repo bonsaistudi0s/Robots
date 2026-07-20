@@ -23,6 +23,9 @@ public class TankMechEntity extends AbstractMechEntity {
     private static final RawAnimation AIM = RawAnimation.begin().thenPlayAndHold("animation.tank_mech.aim");
     private static final RawAnimation AIM_OFF = RawAnimation.begin().thenPlay("animation.tank_mech.aim_off");
     private static final RawAnimation SHOOT_HAND = RawAnimation.begin().thenPlay("animation.tank_mech.shoot_hand");
+    private static final RawAnimation DEATH = RawAnimation.begin().thenPlayAndHold("animation.tank_mech.death");
+    private static final RawAnimation ACTIVATE_IDLE = RawAnimation.begin().thenLoop("animation.tank_mech.activate_idle");
+    private static final RawAnimation ACTIVATE = RawAnimation.begin().thenPlay("animation.tank_mech.activate");
 
     public TankMechEntity(EntityType<? extends TankMechEntity> type, Level level) {
         super(type, level);
@@ -64,6 +67,27 @@ public class TankMechEntity extends AbstractMechEntity {
     @Override
     protected RawAnimation getWalkAnim() {
         return WALK;
+    }
+
+    @Override
+    protected RawAnimation getDeathAnim() {
+        return DEATH;
+    }
+
+    @Override
+    protected RawAnimation getActivateIdleAnim() {
+        return ACTIVATE_IDLE;
+    }
+
+    @Override
+    protected RawAnimation getActivateAnim() {
+        return ACTIVATE;
+    }
+
+    // animation.tank_mech.activate is 2.875s long (57.5 ticks) + a 1s hold before it's mountable
+    @Override
+    protected int activationDurationTicks() {
+        return 58 + 20;
     }
 
     @Override
