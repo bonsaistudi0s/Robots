@@ -15,7 +15,7 @@ public class HitAbility implements MechAbility {
     @Override
     public void onActivate(AbstractMechEntity mech, Player pilot) {
         if (mech instanceof TankMechEntity tankMech) {
-            tankMech.playAttackAnimation();
+            //tankMech.playAttackAnimation();
         }
 
     }

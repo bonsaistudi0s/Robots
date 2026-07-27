@@ -1,21 +1,14 @@
 package dev.xylonity.bonsai.robots.client.entity.renderer;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
 import dev.xylonity.knightlib.api.util.KnightLibMath;
+import dev.xylonity.knightlib.client.animation.renderer.KnightLibMobRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
-import software.bernie.geckolib.cache.object.BakedGeoModel;
-import software.bernie.geckolib.model.GeoModel;
-import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
-public abstract class AbstractMechRenderer<T extends AbstractMechEntity> extends GeoEntityRenderer<T> {
+public abstract class AbstractMechRenderer<T extends AbstractMechEntity> extends KnightLibMobRenderer<T> {
 
     protected float torsoYawHalfLife = 1.5f;
     protected float legsYawHalfLife = 4.0f;
@@ -23,24 +16,24 @@ public abstract class AbstractMechRenderer<T extends AbstractMechEntity> extends
     // Minimal distance considered as movement
     protected double moveThresholdSqr = 1.0E-5;
 
-    protected AbstractMechRenderer(EntityRendererProvider.Context renderManager, GeoModel<T> model) {
-        super(renderManager, model);
+    public AbstractMechRenderer(EntityRendererProvider.Context context, float shadowRadius) {
+        super(context, shadowRadius);
     }
 
-    @Override
-    public void actuallyRender(PoseStack poseStack, T animatable, BakedGeoModel model, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
-        updateVisualYaw(animatable, partialTick);
-        super.actuallyRender(poseStack, animatable, model, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
-    }
+    //@Override
+    //public void actuallyRender(PoseStack poseStack, T animatable, BakedGeoModel model, RenderType renderType, MultiBufferSource bufferSource, VertexConsumer buffer, boolean isReRender, float partialTick, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
+    //    updateVisualYaw(animatable, partialTick);
+    //    super.actuallyRender(poseStack, animatable, model, renderType, bufferSource, buffer, isReRender, partialTick, packedLight, packedOverlay, red, green, blue, alpha);
+    //}
 
-    @Override
-    protected void applyRotations(T animatable, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick) {
-        if (animatable.clientYawInitialized) {
-            rotationYaw = animatable.clientLegsYaw;
-        }
+    //@Override
+    //protected void applyRotations(T animatable, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick) {
+    //    if (animatable.clientYawInitialized) {
+    //        rotationYaw = animatable.clientLegsYaw;
+    //    }
 
-        super.applyRotations(animatable, poseStack, ageInTicks, rotationYaw, partialTick);
-    }
+    //    super.applyRotations(animatable, poseStack, ageInTicks, rotationYaw, partialTick);
+    //}
 
     private void updateVisualYaw(T mech, float partialTick) {
         final Player player = mech.getPilot();

@@ -2,27 +2,25 @@ package dev.xylonity.bonsai.robots.common.entity.mech;
 
 import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
 import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
+import dev.xylonity.knightlib.api.animation.KnightLibAnim;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
 
 import java.util.List;
 
 public class TankMechEntity extends AbstractMechEntity {
 
-    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.tank_mech.idle");
-    private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.tank_mech.walk");
-    private static final RawAnimation ATTACK = RawAnimation.begin().thenPlay("animation.tank_mech.attack");
-    private static final RawAnimation AIM = RawAnimation.begin().thenPlayAndHold("animation.tank_mech.aim");
-    private static final RawAnimation AIM_OFF = RawAnimation.begin().thenPlay("animation.tank_mech.aim_off");
-    private static final RawAnimation SHOOT_HAND = RawAnimation.begin().thenPlay("animation.tank_mech.shoot_hand");
+    private static final KnightLibAnim IDLE = KnightLibAnim.begin().thenLoop("animation.tank_mech.idle");
+    private static final KnightLibAnim WALK = KnightLibAnim.begin().thenLoop("animation.tank_mech.walk");
+    private static final KnightLibAnim ATTACK = KnightLibAnim.begin().thenPlay("animation.tank_mech.attack");
+    private static final KnightLibAnim AIM = KnightLibAnim.begin().thenPlayAndHold("animation.tank_mech.aim");
+    private static final KnightLibAnim AIM_OFF = KnightLibAnim.begin().thenPlay("animation.tank_mech.aim_off");
+    private static final KnightLibAnim SHOOT_HAND = KnightLibAnim.begin().thenPlay("animation.tank_mech.shoot_hand");
 
     public TankMechEntity(EntityType<? extends TankMechEntity> type, Level level) {
         super(type, level);
@@ -57,44 +55,53 @@ public class TankMechEntity extends AbstractMechEntity {
     }
 
     @Override
-    protected RawAnimation getIdleAnim() {
+    protected void positionRider(Entity passenger, MoveFunction callback) {
+        if (this.hasPassenger(passenger)) {
+            final double y = this.getY() + this.getPassengersRidingOffset() + passenger.getMyRidingOffset();
+            callback.accept(passenger, this.getX(), y + 1, this.getZ());
+        }
+
+    }
+
+    @Override
+    protected KnightLibAnim getIdleAnim() {
         return IDLE;
     }
 
     @Override
-    protected RawAnimation getWalkAnim() {
+    protected KnightLibAnim getWalkAnim() {
         return WALK;
     }
 
-    @Override
-    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        super.registerControllers(controllers);
+    //@Override
+    //public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+    //    super.registerControllers(controllers);
 
-        controllers.add(new AnimationController<>(this, "attack", 2, state -> PlayState.STOP)
-                .triggerableAnim("attack", ATTACK));
+    //    controllers.add(new AnimationController<>(this, "attack", 2, state -> PlayState.STOP)
+    //            .triggerableAnim("attack", ATTACK));
 
-        controllers.add(new AnimationController<>(this, "aim", state -> PlayState.STOP)
-                .triggerableAnim("aim", AIM)
-                .triggerableAnim("aim_off", AIM_OFF));
+    //    controllers.add(new AnimationController<>(this, "aim", state -> PlayState.STOP)
+    //            .triggerableAnim("aim", AIM)
+    //            .triggerableAnim("aim_off", AIM_OFF));
 
-        controllers.add(new AnimationController<>(this, "shoot_hand", state -> PlayState.STOP)
-                .triggerableAnim("shoot_hand", SHOOT_HAND));
-    }
+    //    controllers.add(new AnimationController<>(this, "shoot_hand", state -> PlayState.STOP)
+    //            .triggerableAnim("shoot_hand", SHOOT_HAND));
+    //}
 
-    public void playAttackAnimation() {
-        triggerAnim("attack", "attack");
-    }
+    //public void playAttackAnimation() {
+    //    triggerAnim("attack", "attack");
+    //}
 
-    public void playAimAnimation() {
-        triggerAnim("aim", "aim");
-    }
+    //public void playAimAnimation() {
+    //    triggerAnim("aim", "aim");
+    // }
 
-    public void playAimOffAnimation() {
-        triggerAnim("aim", "aim_off");
-    }
+    //public void playAimOffAnimation() {
+    //    triggerAnim("aim", "aim_off");
+    //}
 
-    public void playShootHandAnimation() {
-        triggerAnim("shoot_hand", "shoot_hand");
-    }
+    //public void playShootHandAnimation() {
+    //    triggerAnim("shoot_hand", "shoot_hand");
+    //}
 
 }

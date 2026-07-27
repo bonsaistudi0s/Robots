@@ -1,6 +1,10 @@
 package dev.xylonity.bonsai.robots.common.entity;
 
 import dev.xylonity.bonsai.robots.common.entity.ability.AbilityManager;
+import dev.xylonity.knightlib.api.animation.KnightLibAnim;
+import dev.xylonity.knightlib.api.animation.KnightLibAnimatable;
+import dev.xylonity.knightlib.api.animation.KnightLibAnimationControllerRegistrar;
+import dev.xylonity.knightlib.api.animation.KnightLibAnimationHandler;
 import dev.xylonity.knightlib.api.util.KnightLibMath;
 import dev.xylonity.knightlib.api.util.ResourceLocations;
 import net.minecraft.nbt.CompoundTag;
@@ -19,20 +23,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.core.animation.AnimationController;
-import software.bernie.geckolib.core.animation.AnimationState;
-import software.bernie.geckolib.core.animation.RawAnimation;
-import software.bernie.geckolib.core.object.PlayState;
-import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
 
-public abstract class AbstractMechEntity extends PathfinderMob implements GeoEntity {
+public abstract class AbstractMechEntity extends PathfinderMob implements KnightLibAnimatable {
 
-    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    private final KnightLibAnimationHandler animations = KnightLibAnimationHandler.of(this);
 
     // Slot for the current ability in use
     private static final EntityDataAccessor<Integer> DATA_ACTIVE_SLOT = SynchedEntityData.defineId(AbstractMechEntity.class, EntityDataSerializers.INT);
@@ -228,8 +224,8 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
         return ResourceLocations.of(abilityId.getNamespace(), "textures/gui/ability/" + abilityId.getPath() + ".png");
     }
 
-    protected abstract RawAnimation getIdleAnim();
-    protected abstract RawAnimation getWalkAnim();
+    protected abstract KnightLibAnim getIdleAnim();
+    protected abstract KnightLibAnim getWalkAnim();
 
     // Blocks per walk cycle (used to scale the walking animation)
     protected float getWalkBlocksPerCycle() {
@@ -243,32 +239,31 @@ public abstract class AbstractMechEntity extends PathfinderMob implements GeoEnt
 
     // This is also set to change as there are some mech entities that do now have a walk animation (like the submarine one)
     @Override
-    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>(this, "movement", 5, this::movementPredicate)
-                .setAnimationSpeedHandler(mech -> mech.walkAnimSpeed));
+    public void registerAnimationControllers(KnightLibAnimationControllerRegistrar controllers) {
+        //controllers.add(this, "movement", 5, this::movementPredicate);
     }
 
-    protected PlayState movementPredicate(AnimationState<AbstractMechEntity> state) {
-        final double dx = this.getX() - this.xo;
-        final double dz = this.getZ() - this.zo;
-        final double blocksPerTick = Math.sqrt(dx * dx + dz * dz);
+    //protected PlayState movementPredicate(AnimationState<AbstractMechEntity> state) {
+    //    final double dx = this.getX() - this.xo;
+    //    final double dz = this.getZ() - this.zo;
+    //    final double blocksPerTick = Math.sqrt(dx * dx + dz * dz);
 
-        if (blocksPerTick > 0.01D) {
-            final double target = Mth.clamp(blocksPerTick * 20.0D * getWalkCycleSeconds() / getWalkBlocksPerCycle(), 0.25D, 3.0D);
-            this.walkAnimSpeed += (target - this.walkAnimSpeed) * 0.15D;
-            state.getController().setAnimation(getWalkAnim());
-        }
-        else {
-            this.walkAnimSpeed += (1.0D - this.walkAnimSpeed) * 0.15D;
-            state.getController().setAnimation(getIdleAnim());
-        }
+    //    if (blocksPerTick > 0.01D) {
+    //        final double target = Mth.clamp(blocksPerTick * 20.0D * getWalkCycleSeconds() / getWalkBlocksPerCycle(), 0.25D, 3.0D);
+    //        this.walkAnimSpeed += (target - this.walkAnimSpeed) * 0.15D;
+    //        state.getController().setAnimation(getWalkAnim());
+    //    }
+    //    else {
+    //        this.walkAnimSpeed += (1.0D - this.walkAnimSpeed) * 0.15D;
+    //        state.getController().setAnimation(getIdleAnim());
+    //    }
 
-        return PlayState.CONTINUE;
-    }
+    //    return PlayState.CONTINUE;
+    //}
 
     @Override
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return this.cache;
+    public KnightLibAnimationHandler getAnimationHandler() {
+        return this.animations;
     }
 
 }

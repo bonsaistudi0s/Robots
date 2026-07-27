@@ -32,7 +32,7 @@ public class LazerBigAbility implements MechAbility {
     @Override
     public void onStartAiming(AbstractMechEntity mech, Player pilot) {
         if (mech instanceof TankMechEntity tankMech) {
-            tankMech.playAimAnimation();
+            //tankMech.playAimAnimation();
         }
 
     }
@@ -40,7 +40,7 @@ public class LazerBigAbility implements MechAbility {
     @Override
     public void onStopAiming(AbstractMechEntity mech, @Nullable Player pilot) {
         if (mech instanceof TankMechEntity tankMech) {
-            tankMech.playAimOffAnimation();
+            //tankMech.playAimOffAnimation();
         }
 
     }
@@ -75,7 +75,7 @@ public class LazerBigAbility implements MechAbility {
 
         mech.level().addFreshEntity(laser);
 
-        tankMech.playShootHandAnimation();
+        //tankMech.playShootHandAnimation();
     }
 
 }
