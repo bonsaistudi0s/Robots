@@ -3,6 +3,9 @@ package dev.xylonity.bonsai.robots.common.entity.mech;
 import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
 import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
 import dev.xylonity.knightlib.api.animation.KnightLibAnim;
+import dev.xylonity.knightlib.api.animation.KnightLibAnimationController;
+import dev.xylonity.knightlib.api.animation.KnightLibAnimationControllerRegistrar;
+import dev.xylonity.knightlib.api.animation.KnightLibAnimationState;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -64,44 +67,33 @@ public class TankMechEntity extends AbstractMechEntity {
     }
 
     @Override
-    protected KnightLibAnim getIdleAnim() {
+    protected KnightLibAnim getIdleAnimation() {
         return IDLE;
     }
 
     @Override
-    protected KnightLibAnim getWalkAnim() {
+    protected KnightLibAnim getMovementAnimation() {
         return WALK;
     }
 
-    //@Override
-    //public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-    //    super.registerControllers(controllers);
+    @Override
+    public void registerAnimationControllers(KnightLibAnimationControllerRegistrar controllers) {
+        controllers.add(KnightLibAnimationController.of("movementController")
+                .selects(this::movementPredicate)
+                .movementSpeed(getWalkBlocksPerCycle(), getWalkCycleSeconds())
+                .transition(5)
+        );
 
-    //    controllers.add(new AnimationController<>(this, "attack", 2, state -> PlayState.STOP)
-    //            .triggerableAnim("attack", ATTACK));
+    }
 
-    //    controllers.add(new AnimationController<>(this, "aim", state -> PlayState.STOP)
-    //            .triggerableAnim("aim", AIM)
-    //            .triggerableAnim("aim_off", AIM_OFF));
+    private KnightLibAnim movementPredicate(KnightLibAnimationState state) {
+        if (state.isMoving()) {
+            return WALK;
+        }
+        else {
+            return IDLE;
+        }
 
-    //    controllers.add(new AnimationController<>(this, "shoot_hand", state -> PlayState.STOP)
-    //            .triggerableAnim("shoot_hand", SHOOT_HAND));
-    //}
-
-    //public void playAttackAnimation() {
-    //    triggerAnim("attack", "attack");
-    //}
-
-    //public void playAimAnimation() {
-    //    triggerAnim("aim", "aim");
-    // }
-
-    //public void playAimOffAnimation() {
-    //    triggerAnim("aim", "aim_off");
-    //}
-
-    //public void playShootHandAnimation() {
-    //    triggerAnim("shoot_hand", "shoot_hand");
-    //}
+    }
 
 }

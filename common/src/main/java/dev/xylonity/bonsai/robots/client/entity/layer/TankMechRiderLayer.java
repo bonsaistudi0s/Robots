@@ -20,7 +20,7 @@ public class TankMechRiderLayer extends KnightLibRenderLayer<TankMechEntity> {
     }
 
     @Override
-    public void render(KnightLibRenderLayerContext<TankMechEntity> context) {
+    public void render(final KnightLibRenderLayerContext<TankMechEntity> context) {
         final Minecraft minecraft = Minecraft.getInstance();
         final TankMechEntity mech = context.target();
         final PoseStack poseStack = context.poseStack();

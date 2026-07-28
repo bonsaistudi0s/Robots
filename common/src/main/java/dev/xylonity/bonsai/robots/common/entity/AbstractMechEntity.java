@@ -1,10 +1,7 @@
 package dev.xylonity.bonsai.robots.common.entity;
 
 import dev.xylonity.bonsai.robots.common.entity.ability.AbilityManager;
-import dev.xylonity.knightlib.api.animation.KnightLibAnim;
-import dev.xylonity.knightlib.api.animation.KnightLibAnimatable;
-import dev.xylonity.knightlib.api.animation.KnightLibAnimationControllerRegistrar;
-import dev.xylonity.knightlib.api.animation.KnightLibAnimationHandler;
+import dev.xylonity.knightlib.api.animation.*;
 import dev.xylonity.knightlib.api.util.KnightLibMath;
 import dev.xylonity.knightlib.api.util.ResourceLocations;
 import net.minecraft.nbt.CompoundTag;
@@ -47,9 +44,6 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
 
     public boolean clientLegsReversed;
     public float clientAimCameraProgress;
-
-    // Internal, used by the respective walking controller (so the walking animation speed depends o nthe actual speed of the mech)
-    private double walkAnimSpeed = 1.0D;
 
     protected AbstractMechEntity(EntityType<? extends AbstractMechEntity> type, Level level) {
         super(type, level);
@@ -161,16 +155,24 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
     // Caps the speed if the legs aren't looking at the look direction (taking into account the legs might be going backwards)
     @Override
     protected @NotNull Vec3 getRiddenInput(Player player, @NotNull Vec3 travelVector) {
-        float zza = player.zza;
-        if (zza < 0.0F && !legsFaceYaw(player.getYRot() + 180.0F)) {
-            zza *= 0.5F;
+        Vec3 input = new Vec3(player.xxa, 0.0D, player.zza);
+        if (input.horizontalDistanceSqr() < 1.0E-7D) {
+            return input;
         }
 
-        return new Vec3(player.xxa * 0.5F, 0.0D, zza);
-    }
+        if (this.clientYawInitialized) {
+            final Vec3 worldInput = input.yRot((float) Math.toRadians(-player.getYRot()));
+            final float movementYaw = KnightLibMath.yawAngleOf(worldInput);
+            if (Math.abs(KnightLibMath.angleDelta(this.clientLegsYaw, movementYaw)) > 90.0F) {
+                input = input.scale(0.5D);
+            }
 
-    private boolean legsFaceYaw(float yaw) {
-        return this.clientYawInitialized && Math.abs(KnightLibMath.angleDelta(this.clientLegsYaw, yaw)) < 90.0F;
+        }
+        else if (player.zza < 0.0F) {
+            input = input.scale(0.5D);
+        }
+
+        return input;
     }
 
     @Override
@@ -224,8 +226,8 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
         return ResourceLocations.of(abilityId.getNamespace(), "textures/gui/ability/" + abilityId.getPath() + ".png");
     }
 
-    protected abstract KnightLibAnim getIdleAnim();
-    protected abstract KnightLibAnim getWalkAnim();
+    protected abstract KnightLibAnim getIdleAnimation();
+    protected abstract KnightLibAnim getMovementAnimation();
 
     // Blocks per walk cycle (used to scale the walking animation)
     protected float getWalkBlocksPerCycle() {
@@ -236,30 +238,6 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
     protected float getWalkCycleSeconds() {
         return 1F;
     }
-
-    // This is also set to change as there are some mech entities that do now have a walk animation (like the submarine one)
-    @Override
-    public void registerAnimationControllers(KnightLibAnimationControllerRegistrar controllers) {
-        //controllers.add(this, "movement", 5, this::movementPredicate);
-    }
-
-    //protected PlayState movementPredicate(AnimationState<AbstractMechEntity> state) {
-    //    final double dx = this.getX() - this.xo;
-    //    final double dz = this.getZ() - this.zo;
-    //    final double blocksPerTick = Math.sqrt(dx * dx + dz * dz);
-
-    //    if (blocksPerTick > 0.01D) {
-    //        final double target = Mth.clamp(blocksPerTick * 20.0D * getWalkCycleSeconds() / getWalkBlocksPerCycle(), 0.25D, 3.0D);
-    //        this.walkAnimSpeed += (target - this.walkAnimSpeed) * 0.15D;
-    //        state.getController().setAnimation(getWalkAnim());
-    //    }
-    //    else {
-    //        this.walkAnimSpeed += (1.0D - this.walkAnimSpeed) * 0.15D;
-    //        state.getController().setAnimation(getIdleAnim());
-    //    }
-
-    //    return PlayState.CONTINUE;
-    //}
 
     @Override
     public KnightLibAnimationHandler getAnimationHandler() {

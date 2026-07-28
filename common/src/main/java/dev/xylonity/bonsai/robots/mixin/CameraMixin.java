@@ -30,7 +30,7 @@ public abstract class CameraMixin {
             final float frameTicks = Minecraft.getInstance().getDeltaFrameTime();
             final float factor = 1.0F - (float) Math.pow(0.5D, frameTicks / 2.5f);
             mech.clientAimCameraProgress += (target - mech.clientAimCameraProgress) * factor;
-            move(1.25d * mech.clientAimCameraProgress, 0.75D, -0.85D);
+            move(1.25d * mech.clientAimCameraProgress, 0, -0.85D);
         }
 
     }

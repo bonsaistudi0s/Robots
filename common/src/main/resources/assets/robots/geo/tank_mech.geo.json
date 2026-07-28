@@ -355,8 +355,8 @@
 				},
 				{
 					"name": "player",
-					"parent": "body_2",
-					"pivot": [0, 57.7, -2]
+					"parent": "body_player_control",
+					"pivot": [0, 57.7, 5]
 				},
 				{
 					"name": "right_leg",
