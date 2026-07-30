@@ -32,7 +32,7 @@ public class TankMechEntity extends AbstractMechEntity {
     public static AttributeSupplier.Builder createAttributes() {
         return createMechAttributes()
                 .add(Attributes.MAX_HEALTH, 120.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.17225D);
+                .add(Attributes.MOVEMENT_SPEED, 0.16225D);
     }
 
     @Override
