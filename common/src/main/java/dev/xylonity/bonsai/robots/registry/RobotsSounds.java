@@ -41,6 +41,7 @@ public final class RobotsSounds {
     public static final ResourceEntry<SoundEvent> GENERIC_DEATH = register("generic_death");
     public static final ResourceEntry<SoundEvent> GENERIC_ACTIVATE = register("generic_activate");
     public static final ResourceEntry<SoundEvent> GENERIC_HIT = register("generic_hit");
+    public static final ResourceEntry<SoundEvent> GENERIC_HARD_HIT = register("generic_hard_hit");
     public static final ResourceEntry<SoundEvent> GENERIC_IMPACT = register("generic_impact");
     public static final ResourceEntry<SoundEvent> GENERIC_LEG_SWING = register("generic_leg_swing");
     public static final ResourceEntry<SoundEvent> GENERIC_STEP = register("generic_step");

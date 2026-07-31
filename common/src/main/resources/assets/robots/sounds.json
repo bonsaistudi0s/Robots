@@ -154,7 +154,11 @@
   "generic_hit": {
     "sounds": [
       "robots:generic/generic_hit_1",
-      "robots:generic/generic_hit_2",
+      "robots:generic/generic_hit_2"
+    ]
+  },
+  "generic_hard_hit": {
+    "sounds": [
       "robots:generic/generic_hit_3",
       "robots:generic/generic_hit_4"
     ]

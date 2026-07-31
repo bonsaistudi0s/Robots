@@ -20,7 +20,6 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
 
-    modImplementation("software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}")
     modImplementation("dev.xylonity.knightlib:knightlib-fabric-${minecraft_version}:${knightlib_version}")
 
     implementation project(":common")
