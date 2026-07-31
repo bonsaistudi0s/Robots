@@ -5,6 +5,7 @@ import dev.xylonity.bonsai.robots.platform.RobotsPlatform;
 import dev.xylonity.bonsai.robots.proxy.IProxy;
 import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
 import dev.xylonity.bonsai.robots.registry.RobotsEntities;
+import dev.xylonity.bonsai.robots.registry.RobotsSounds;
 import dev.xylonity.knightlib.api.network.Network;
 import dev.xylonity.knightlib.api.network.NetworkEndpoint;
 import dev.xylonity.knightlib.api.util.ResourceLocations;
@@ -27,6 +28,7 @@ public class Robots {
 
     public static void init() {
         RobotsEntities.ENTITIES.init();
+        RobotsSounds.SOUNDS.init();
 
         RobotsAbilities.init();
 

@@ -1,0 +1,366 @@
+{
+  "aquatic_mech_activate": {
+    "sounds": [
+      "robots:aquatic_mech/aquatic_mech_activate"
+    ]
+  },
+  "aquatic_mech_death": {
+    "sounds": [
+      "robots:aquatic_mech/aquatic_mech_death"
+    ]
+  },
+  "aquatic_mech_idle": {
+    "sounds": [
+      "robots:aquatic_mech/aquatic_mech_idle",
+      "robots:aquatic_mech/aquatic_mech_idle_2",
+      "robots:aquatic_mech/aquatic_mech_idle_3"
+    ]
+  },
+  "aquatic_mech_on_land": {
+    "sounds": [
+      "robots:aquatic_mech/aquatic_mech_on_land"
+    ]
+  },
+  "aquatic_mech_swim": {
+    "sounds": [
+      "robots:aquatic_mech/aquatic_mech_swim"
+    ]
+  },
+  "barrel_bot_activate": {
+    "sounds": [
+      "robots:barrel_bot/activate"
+    ]
+  },
+  "barrel_bot_step": {
+    "sounds": [
+      "robots:barrel_bot/barrelbot_step_1",
+      "robots:barrel_bot/barrelbot_step_2"
+    ]
+  },
+  "barrel_bot_clamp": {
+    "sounds": [
+      "robots:barrel_bot/clamp"
+    ]
+  },
+  "barrel_bot_long_woosh": {
+    "sounds": [
+      "robots:barrel_bot/long-woosh"
+    ]
+  },
+  "crab_mech_activate": {
+    "sounds": [
+      "robots:crab_mech/crab_mech_activate"
+    ]
+  },
+  "crab_mech_walk": {
+    "sounds": [
+      "robots:crab_mech/crab_mech_walk"
+    ]
+  },
+  "farm_mech_farming": {
+    "sounds": [
+      "robots:farm_mech/farm_mech_farming"
+    ]
+  },
+  "farm_mech_walk": {
+    "sounds": [
+      "robots:farm_mech/farm_mech_walk"
+    ]
+  },
+  "farm_mech_watering": {
+    "sounds": [
+      "robots:farm_mech/farm_mech_watering"
+    ]
+  },
+  "flying_mech_activate": {
+    "sounds": [
+      "robots:flying_mech/flying_mech_activate"
+    ]
+  },
+  "flying_mech_death": {
+    "sounds": [
+      "robots:flying_mech/flying_mech_death"
+    ]
+  },
+  "flying_mech_fly": {
+    "sounds": [
+      "robots:flying_mech/flying_mech_fly"
+    ]
+  },
+  "flying_mech_fly_boosted": {
+    "sounds": [
+      "robots:flying_mech/flying_mech_fly_boosted"
+    ]
+  },
+  "flying_mech_fly_end": {
+    "sounds": [
+      "robots:flying_mech/flying_mech_fly_end"
+    ]
+  },
+  "flying_mech_idle": {
+    "sounds": [
+      "robots:flying_mech/flying_mech_idle"
+    ]
+  },
+  "flying_mech_walk": {
+    "sounds": [
+      "robots:flying_mech/flying_mech_walk_1",
+      "robots:flying_mech/flying_mech_walk_2"
+    ]
+  },
+  "booster_ability": {
+    "sounds": [
+      "robots:generic/abilities/booster_ability"
+    ]
+  },
+  "ground_hit_ability": {
+    "sounds": [
+      "robots:generic/abilities/ground_hit_ability"
+    ]
+  },
+  "rocket_ability": {
+    "sounds": [
+      "robots:generic/abilities/rocket_ability_1",
+      "robots:generic/abilities/rocket_ability_2"
+    ]
+  },
+  "roll_ability": {
+    "sounds": [
+      "robots:generic/abilities/roll_ability"
+    ]
+  },
+  "aim": {
+    "sounds": [
+      "robots:generic/aim"
+    ]
+  },
+  "aim_off": {
+    "sounds": [
+      "robots:generic/aim_off"
+    ]
+  },
+  "generic_death": {
+    "sounds": [
+      "robots:generic/death_1"
+    ]
+  },
+  "generic_activate": {
+    "sounds": [
+      "robots:generic/generic_activate_1",
+      "robots:generic/generic_activate_2",
+      "robots:generic/generic_activate_3"
+    ]
+  },
+  "generic_hit": {
+    "sounds": [
+      "robots:generic/generic_hit_1",
+      "robots:generic/generic_hit_2",
+      "robots:generic/generic_hit_3",
+      "robots:generic/generic_hit_4"
+    ]
+  },
+  "generic_impact": {
+    "sounds": [
+      "robots:generic/generic_impact_1",
+      "robots:generic/generic_impact_2"
+    ]
+  },
+  "generic_leg_swing": {
+    "sounds": [
+      "robots:generic/generic_walking/leg_swing_1",
+      "robots:generic/generic_walking/leg_swing_2",
+      "robots:generic/generic_walking/leg_swing_3",
+      "robots:generic/generic_walking/leg_swing_4"
+    ]
+  },
+  "generic_step": {
+    "sounds": [
+      "robots:generic/generic_walking/step_1",
+      "robots:generic/generic_walking/step_2",
+      "robots:generic/generic_walking/step_3",
+      "robots:generic/generic_walking/step_4"
+    ]
+  },
+  "generic_idle": {
+    "sounds": [
+      "robots:generic/idle/generic_idle",
+      "robots:generic/idle/generic_idle_2",
+      "robots:generic/idle/generic_idle_3",
+      "robots:generic/idle/generic_idle_4",
+      "robots:generic/idle/generic_idle_5",
+      "robots:generic/idle/generic_idle_6",
+      "robots:generic/idle/generic_idle_8",
+      "robots:generic/idle/generic_idle_9",
+      "robots:generic/idle/generic_idle_10"
+    ]
+  },
+  "laser": {
+    "sounds": [
+      "robots:generic/projectiles/laser_1",
+      "robots:generic/projectiles/laser_2",
+      "robots:generic/projectiles/laser_3",
+      "robots:generic/projectiles/laser_4"
+    ]
+  },
+  "slow_laser": {
+    "sounds": [
+      "robots:generic/projectiles/slow_laser_1",
+      "robots:generic/projectiles/slow_laser_2",
+      "robots:generic/projectiles/slow_laser_3",
+      "robots:generic/projectiles/slow_laser_4"
+    ]
+  },
+  "slow_zap": {
+    "sounds": [
+      "robots:generic/projectiles/slow_zap_1",
+      "robots:generic/projectiles/slow_zap_2"
+    ]
+  },
+  "zap": {
+    "sounds": [
+      "robots:generic/projectiles/zap_1",
+      "robots:generic/projectiles/zap_2",
+      "robots:generic/projectiles/zap_3",
+      "robots:generic/projectiles/zap_4"
+    ]
+  },
+  "mining_mech_claw_off": {
+    "sounds": [
+      "robots:mining_mech/mining_mech_claw_off"
+    ]
+  },
+  "mining_mech_claw_on": {
+    "sounds": [
+      "robots:mining_mech/mining_mech_claw_on"
+    ]
+  },
+  "mining_mech_death": {
+    "sounds": [
+      "robots:mining_mech/mining_mech_death"
+    ]
+  },
+  "mining_mech_drill": {
+    "sounds": [
+      "robots:mining_mech/mining_mech_drill_1"
+    ]
+  },
+  "mining_mech_drill_off": {
+    "sounds": [
+      "robots:mining_mech/mining_mech_drill_off"
+    ]
+  },
+  "mining_mech_drill_on": {
+    "sounds": [
+      "robots:mining_mech/mining_mech_drill_on"
+    ]
+  },
+  "mining_mech_idle": {
+    "sounds": [
+      "robots:mining_mech/mining_mech_idle"
+    ]
+  },
+  "mining_mech_walk": {
+    "sounds": [
+      "robots:mining_mech/mining_mech_walk"
+    ]
+  },
+  "rolling_mech_activate": {
+    "sounds": [
+      "robots:rolling_mech/rolling_mech_activate"
+    ]
+  },
+  "rolling_mech_close": {
+    "sounds": [
+      "robots:rolling_mech/rolling_mech_close"
+    ]
+  },
+  "rolling_mech_death": {
+    "sounds": [
+      "robots:rolling_mech/rolling_mech_death"
+    ]
+  },
+  "rolling_mech_open": {
+    "sounds": [
+      "robots:rolling_mech/rolling_mech_open"
+    ]
+  },
+  "rolling_mech_roll": {
+    "sounds": [
+      "robots:rolling_mech/rolling_mech_roll"
+    ]
+  },
+  "rolling_mech_walk": {
+    "sounds": [
+      "robots:rolling_mech/rolling_mech_walk"
+    ]
+  },
+  "shield_mech_walk": {
+    "sounds": [
+      "robots:shield_mech/shield_mech_walk"
+    ]
+  },
+  "support_bot_activate": {
+    "sounds": [
+      "robots:support_bot/support_bot_activate"
+    ]
+  },
+  "support_bot_death": {
+    "sounds": [
+      "robots:support_bot/support_bot_death"
+    ]
+  },
+  "support_bot_heal": {
+    "sounds": [
+      "robots:support_bot/support_bot_heal"
+    ]
+  },
+  "support_bot_idle": {
+    "sounds": [
+      "robots:support_bot/support_bot_idle"
+    ]
+  },
+  "tall_mech_activate": {
+    "sounds": [
+      "robots:tall_mech/tall_mech_activate"
+    ]
+  },
+  "tall_mech_death": {
+    "sounds": [
+      "robots:tall_mech/tall_mech_death"
+    ]
+  },
+  "tall_mech_idle": {
+    "sounds": [
+      "robots:tall_mech/tall_mech_idle",
+      "robots:tall_mech/tall_mech_idle_2",
+      "robots:tall_mech/tall_mech__idle_3"
+    ]
+  },
+  "tall_mech_jump": {
+    "sounds": [
+      "robots:tall_mech/tall_mech_jump"
+    ]
+  },
+  "tall_mech_walk": {
+    "sounds": [
+      "robots:tall_mech/tall_mech_walk"
+    ]
+  },
+  "tank_mech_activate": {
+    "sounds": [
+      "robots:tank_mech/tank_mech_activate"
+    ]
+  },
+  "tank_mech_death": {
+    "sounds": [
+      "robots:tank_mech/tank_mech_death"
+    ]
+  },
+  "tank_mech_idle": {
+    "sounds": [
+      "robots:tank_mech/tank_mech_idle_1",
+      "robots:tank_mech/tank_mech_idle_2",
+      "robots:tank_mech/tank_mech_idle_3"
+    ]
+  }
+}
