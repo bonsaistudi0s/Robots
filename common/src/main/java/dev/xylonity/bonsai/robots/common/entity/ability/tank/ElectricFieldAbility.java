@@ -17,8 +17,8 @@ public class ElectricFieldAbility implements MechAbility {
     }
 
     @Override
-    public int durationTicks() {
-        return Integer.MAX_VALUE;
+    public boolean isToggle() {
+        return true;
     }
 
     @Override

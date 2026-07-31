@@ -17,8 +17,11 @@ public class RobotsEntities {
 
     public static final ResourceRegistry<EntityType<?>> ENTITIES = ResourceDispatcher.create(BuiltInRegistries.ENTITY_TYPE, Robots.MOD_ID);
 
-    public static final ResourceEntry<EntityType<TankMechEntity>> TANK_MECH = ENTITIES.registerEntity("tank_mech", TankMechEntity::new, MobCategory.CREATURE, 2f, 3f);
-    public static final ResourceEntry<EntityType<LaserProjectileEntity>> LASER_PROJECTILE = ENTITIES.registerEntity("laser", LaserProjectileEntity::new, MobCategory.MISC, 0.25F, 0.25F, List.of(builder -> builder.noSave().clientTrackingRange(8).updateInterval(1)));
-    public static final ResourceEntry<EntityType<BigLaserProjectileEntity>> BIG_LASER_PROJECTILE = ENTITIES.registerEntity("big_laser", BigLaserProjectileEntity::new, MobCategory.MISC, 0.5F, 0.5F, List.of(builder -> builder.noSave().clientTrackingRange(8).updateInterval(1)));
+    public static final ResourceEntry<EntityType<TankMechEntity>> TANK_MECH = ENTITIES.registerEntity("tank_mech", TankMechEntity::new, MobCategory.CREATURE, 1.85f, 3f);
+
+    public static final ResourceEntry<EntityType<LaserProjectileEntity>> LASER_PROJECTILE = ENTITIES.registerEntity("laser", LaserProjectileEntity::new, MobCategory.MISC, 0.25F, 0.25F,
+            List.of(builder -> builder.noSave().clientTrackingRange(8).updateInterval(1)));
+    public static final ResourceEntry<EntityType<BigLaserProjectileEntity>> BIG_LASER_PROJECTILE = ENTITIES.registerEntity("big_laser", BigLaserProjectileEntity::new, MobCategory.MISC, 0.5F, 0.5F,
+            List.of(builder -> builder.noSave().clientTrackingRange(8).updateInterval(1)));
 
 }

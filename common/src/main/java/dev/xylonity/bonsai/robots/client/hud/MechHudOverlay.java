@@ -103,7 +103,7 @@ public final class MechHudOverlay {
             graphics.blit(mech.getAbilityIcon(id), x, y, 0, 0.0F, 0.0F, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
         }
 
-        if (mech.getSelectedSlot() == slot) {
+        if (mech.getSelectedSlot() == slot || mech.isToggleActive(slot)) {
             graphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0x66000000);
         }
 
