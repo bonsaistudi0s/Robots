@@ -1,5 +1,6 @@
 package dev.xylonity.bonsai.robots.common.entity.projectile;
 
+import dev.xylonity.bonsai.robots.client.particle.RobotsParticles;
 import dev.xylonity.bonsai.robots.registry.RobotsEntities;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -33,7 +34,6 @@ public class BigLaserProjectileEntity extends LaserProjectileEntity {
         if (!this.level().isClientSide) {
             result.getEntity().setSecondsOnFire(4);
         }
-
     }
 
     @Override

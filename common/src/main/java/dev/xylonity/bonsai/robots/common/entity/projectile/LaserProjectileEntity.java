@@ -1,6 +1,9 @@
 package dev.xylonity.bonsai.robots.common.entity.projectile;
 
+import dev.xylonity.bonsai.robots.client.particle.RobotsParticles;
 import dev.xylonity.bonsai.robots.registry.RobotsEntities;
+import dev.xylonity.knightlib.api.animation.KnightLibAnimatable;
+import dev.xylonity.knightlib.api.animation.KnightLibAnimationHandler;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -8,14 +11,10 @@ import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import software.bernie.geckolib.animatable.GeoEntity;
-import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
-import software.bernie.geckolib.core.animation.AnimatableManager;
-import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class LaserProjectileEntity extends ThrowableProjectile implements GeoEntity {
+public class LaserProjectileEntity extends ThrowableProjectile implements KnightLibAnimatable {
 
-    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    private final KnightLibAnimationHandler animations = KnightLibAnimationHandler.of(this);
 
     public LaserProjectileEntity(EntityType<? extends LaserProjectileEntity> type, Level level) {
         super(type, level);
@@ -72,13 +71,8 @@ public class LaserProjectileEntity extends ThrowableProjectile implements GeoEnt
     }
 
     @Override
-    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        ;;
-    }
-
-    @Override
-    public AnimatableInstanceCache getAnimatableInstanceCache() {
-        return this.cache;
+    public KnightLibAnimationHandler getAnimationHandler() {
+        return this.animations;
     }
 
 }
