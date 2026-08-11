@@ -24,7 +24,7 @@ public record SelectAbilityC2SPacket(
 
     private static void handle(SelectAbilityC2SPacket pkt, ServerPlayer player) {
         if (player.getVehicle() instanceof AbstractMechEntity mech && mech.getControllingPassenger() == player) {
-            mech.getAbilityManager().selectSpecial(pkt.slot(), player);
+            mech.getAbilityManager().selectAbilityGroup(pkt.slot(), player);
         }
 
     }
