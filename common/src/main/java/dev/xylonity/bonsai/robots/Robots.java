@@ -4,7 +4,11 @@ import dev.xylonity.bonsai.robots.network.RobotsNetwork;
 import dev.xylonity.bonsai.robots.platform.RobotsPlatform;
 import dev.xylonity.bonsai.robots.proxy.IProxy;
 import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
+import dev.xylonity.bonsai.robots.registry.RobotsBlocks;
+import dev.xylonity.bonsai.robots.registry.RobotsCreativeTabs;
 import dev.xylonity.bonsai.robots.registry.RobotsEntities;
+import dev.xylonity.bonsai.robots.registry.RobotsItems;
+import dev.xylonity.bonsai.robots.registry.RobotsParticles;
 import dev.xylonity.bonsai.robots.registry.RobotsSounds;
 import dev.xylonity.knightlib.api.network.Network;
 import dev.xylonity.knightlib.api.network.NetworkEndpoint;
@@ -28,6 +32,10 @@ public class Robots {
 
     public static void init() {
         RobotsEntities.ENTITIES.init();
+        RobotsBlocks.BLOCKS.init();
+        RobotsItems.ITEMS.init();
+        RobotsCreativeTabs.CREATIVE_TABS.init();
+        RobotsParticles.PARTICLES.init();
         RobotsSounds.SOUNDS.init();
 
         RobotsAbilities.init();

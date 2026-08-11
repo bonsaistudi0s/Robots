@@ -1,0 +1,7 @@
+{
+  "parent": "robots:block/battery_cell",
+  "textures": {
+    "1": "robots:block/battery_cell_charged",
+    "particle": "robots:block/battery_cell_charged"
+  }
+}

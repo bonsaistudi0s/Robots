@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "robots:block/battery_cell"
+    }
+  }
+}

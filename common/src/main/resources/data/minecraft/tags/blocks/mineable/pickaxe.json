@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "robots:battery_cell",
+    "robots:battery_cell_charged"
+  ]
+}
