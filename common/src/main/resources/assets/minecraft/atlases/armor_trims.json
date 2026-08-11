@@ -1,0 +1,29 @@
+{
+  "sources": [
+    {
+      "type": "minecraft:paletted_permutations",
+      "textures": [
+        "robots:entity/tank_mech/tank_mech"
+      ],
+      "palette_key": "robots:entity/mech/palettes/base",
+      "permutations": {
+        "white": "robots:entity/mech/palettes/white",
+        "orange": "robots:entity/mech/palettes/orange",
+        "magenta": "robots:entity/mech/palettes/magenta",
+        "light_blue": "robots:entity/mech/palettes/light_blue",
+        "yellow": "robots:entity/mech/palettes/yellow",
+        "lime": "robots:entity/mech/palettes/lime",
+        "pink": "robots:entity/mech/palettes/pink",
+        "gray": "robots:entity/mech/palettes/gray",
+        "light_gray": "robots:entity/mech/palettes/light_gray",
+        "cyan": "robots:entity/mech/palettes/cyan",
+        "purple": "robots:entity/mech/palettes/purple",
+        "blue": "robots:entity/mech/palettes/blue",
+        "brown": "robots:entity/mech/palettes/brown",
+        "green": "robots:entity/mech/palettes/green",
+        "red": "robots:entity/mech/palettes/red",
+        "black": "robots:entity/mech/palettes/black"
+      }
+    }
+  ]
+}
