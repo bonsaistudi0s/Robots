@@ -2,13 +2,14 @@ package dev.xylonity.bonsai.robots.common.entity.ability.tank;
 
 import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
 import dev.xylonity.bonsai.robots.common.entity.ability.MechAbility;
+import dev.xylonity.bonsai.robots.config.RobotsConfig;
 import net.minecraft.world.entity.player.Player;
 
 public class ElectricFieldAbility implements MechAbility {
 
     @Override
     public int cooldownTicks() {
-        return 300;
+        return RobotsConfig.TANK_MECH_ELECTRIC_FIELD_COOLDOWN_TICKS;
     }
 
     @Override
