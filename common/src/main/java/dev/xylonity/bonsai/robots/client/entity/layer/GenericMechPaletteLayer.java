@@ -6,6 +6,7 @@ import dev.xylonity.knightlib.api.util.ResourceLocations;
 import dev.xylonity.knightlib.client.animation.layer.KnightLibRenderLayer;
 import dev.xylonity.knightlib.client.animation.layer.KnightLibRenderLayerContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
@@ -58,7 +59,7 @@ public final class GenericMechPaletteLayer<T extends AbstractMechEntity> extends
         }
 
         final Material material = MATERIALS.computeIfAbsent(sprite, GenericMechPaletteLayer::createMaterials).get(context.target().getDyeColor());
-        final VertexConsumer consumer = material.buffer(context.buffers(), ignored -> Sheets.armorTrimsSheet());
+        final VertexConsumer consumer = material.buffer(context.buffers(), RenderType::entityCutoutNoCull);
         context.renderModel(consumer, context.packedLight(), context.packedOverlay(), context.renderColor());
     }
 
