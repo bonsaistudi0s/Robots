@@ -38,6 +38,11 @@ public class SmallLaserProjectileEntity extends LaserProjectileEntity {
     }
 
     @Override
+    protected boolean piercesEntities() {
+        return true;
+    }
+
+    @Override
     protected void spawnTrailParticles() {
         RobotsParticles.smallLaserTrail(this);
     }

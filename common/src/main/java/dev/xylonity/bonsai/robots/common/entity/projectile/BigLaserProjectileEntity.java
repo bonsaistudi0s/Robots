@@ -34,7 +34,7 @@ public class BigLaserProjectileEntity extends LaserProjectileEntity {
 
     @Override
     protected double getExplosionRadius() {
-        return 3.0D;
+        return 3.6D;
     }
 
     @Override

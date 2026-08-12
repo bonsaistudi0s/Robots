@@ -77,7 +77,12 @@ public class HitAbility implements MechAbility {
                 continue;
             }
 
-            target.hurt(mech.damageSources().mobAttack(mech), (float) attackDamage.getValue());
+            final Vec3 movementBeforeHit = target.getDeltaMovement();
+            if (target.hurt(mech.damageSources().mobAttack(mech), (float) attackDamage.getValue())) {
+                final Vec3 knockback = target.getDeltaMovement().subtract(movementBeforeHit);
+                target.setDeltaMovement(movementBeforeHit.add(knockback.scale(2.0D)));
+            }
+
         }
 
     }

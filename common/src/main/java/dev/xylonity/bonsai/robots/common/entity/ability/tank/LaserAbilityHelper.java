@@ -32,7 +32,7 @@ final class LaserAbilityHelper {
         final double along = Math.max(target.subtract(eyePosition).dot(look), 6.0D);
         final Vec3 direction = eyePosition.add(look.scale(along)).subtract(position).normalize();
         laser.setPos(position);
-        laser.shoot(direction.x, direction.y, direction.z, 3.0F, 0.0F);
+        laser.shoot(direction.x, direction.y, direction.z, 3.3F, 0.0F);
 
         mech.level().addFreshEntity(laser);
     }

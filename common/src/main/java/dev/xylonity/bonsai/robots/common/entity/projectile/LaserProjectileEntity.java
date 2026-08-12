@@ -11,7 +11,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
@@ -19,11 +18,17 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class LaserProjectileEntity extends ThrowableProjectile implements KnightLibAnimatable {
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+public abstract class LaserProjectileEntity extends RobotProjectileEntity implements KnightLibAnimatable {
 
     private final KnightLibAnimationHandler animations = KnightLibAnimationHandler.of(this);
 
     private static final EntityDataAccessor<Boolean> DATA_ELECTRIC = SynchedEntityData.defineId(LaserProjectileEntity.class, EntityDataSerializers.BOOLEAN);
+
+    private final Set<UUID> piercedEntities = new HashSet<>();
 
     private static final byte IMPACT_EVENT_ID = 64;
 
@@ -65,6 +70,10 @@ public abstract class LaserProjectileEntity extends ThrowableProjectile implemen
         return 0.25F;
     }
 
+    protected boolean piercesEntities() {
+        return false;
+    }
+
     protected abstract void spawnTrailParticles();
 
     protected abstract void spawnImpactParticles();
@@ -100,8 +109,17 @@ public abstract class LaserProjectileEntity extends ThrowableProjectile implemen
     }
 
     @Override
+    protected boolean canHitEntity(Entity target) {
+        return super.canHitEntity(target) && !this.piercedEntities.contains(target.getUUID());
+    }
+
+    @Override
     protected void onHitEntity(EntityHitResult result) {
         super.onHitEntity(result);
+        if (this.piercesEntities()) {
+            this.piercedEntities.add(result.getEntity().getUUID());
+        }
+
         if (!this.level().isClientSide) {
             final Entity owner = this.getOwner();
             if (result.getEntity().hurt(this.damageSources().thrown(this, owner), this.getDamage())) {
@@ -120,7 +138,7 @@ public abstract class LaserProjectileEntity extends ThrowableProjectile implemen
         }
 
         super.onHit(result);
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide && (!(result instanceof EntityHitResult) || !this.piercesEntities())) {
             this.discard();
         }
 
