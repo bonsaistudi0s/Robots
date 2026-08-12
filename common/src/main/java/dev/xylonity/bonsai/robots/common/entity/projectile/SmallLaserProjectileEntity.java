@@ -7,43 +7,44 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 
-public class BigLaserProjectileEntity extends LaserProjectileEntity {
+public class SmallLaserProjectileEntity extends LaserProjectileEntity {
 
-    public BigLaserProjectileEntity(EntityType<? extends BigLaserProjectileEntity> type, Level level) {
+    public SmallLaserProjectileEntity(EntityType<? extends SmallLaserProjectileEntity> type, Level level) {
         super(type, level);
     }
 
-    public BigLaserProjectileEntity(Level level, LivingEntity owner) {
-        super(RobotsEntities.BIG_LASER_PROJECTILE.get(), owner, level);
+    public SmallLaserProjectileEntity(Level level, LivingEntity owner) {
+        super(RobotsEntities.SMALL_LASER_PROJECTILE.get(), owner, level);
     }
 
     @Override
     protected float getBaseDamage() {
-        return (float) Math.max(0.0D, RobotsConfig.BIG_LASER_DAMAGE);
+        return (float) Math.max(0.0D, RobotsConfig.SMALL_LASER_DAMAGE);
     }
 
     @Override
     protected int getMinimumFireSeconds() {
-        return RobotsConfig.BIG_LASER_MIN_FIRE_SECONDS;
+        return 0;
     }
 
     @Override
     protected int getMaximumFireSeconds() {
-        return RobotsConfig.BIG_LASER_MAX_FIRE_SECONDS;
+        return 0;
     }
 
     @Override
     protected double getExplosionRadius() {
-        return 3.0D;
+        return 1.5D;
     }
 
     @Override
     protected void spawnTrailParticles() {
-        RobotsParticles.bigLaserTrail(this);
+        RobotsParticles.smallLaserTrail(this);
     }
 
     @Override
     protected void spawnImpactParticles() {
-        RobotsParticles.bigLaserImpact(this);
+        RobotsParticles.smallLaserImpact(this);
     }
+
 }
