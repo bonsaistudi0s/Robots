@@ -19,8 +19,7 @@ public class AbilityManager {
 
     public static final int MAX_SPECIAL_SLOTS = 5;
 
-    // This is set to change
-
+    // Basic abilities permanently bound to left and right click
     public static final int PRIMARY_SLOT = MAX_SPECIAL_SLOTS;
     public static final int SECONDARY_SLOT = MAX_SPECIAL_SLOTS + 1;
 
@@ -30,6 +29,9 @@ public class AbilityManager {
 
     private final int[] cooldowns = new int[TOTAL_SLOTS];
 
+    // Ticks each sustained ability has been switched on for (indexed per special ability slot)
+    private final int[] toggleTicks = new int[MAX_SPECIAL_SLOTS];
+
     private List<MechAbility> specials;
     private MechAbility primary;
     private MechAbility secondary;
@@ -38,6 +40,7 @@ public class AbilityManager {
     private int aimingTicks;
     private int aimReleaseTicks;
     private int aimingSlot = -1;
+    private int syncedPilotId = -1;
 
     private final AbstractMechEntity mech;
 
@@ -76,6 +79,14 @@ public class AbilityManager {
     public int specialSlotCount() {
         resolve();
         return Math.min(specials.size(), MAX_SPECIAL_SLOTS);
+    }
+
+    /**
+     * Whether a non-toggle special ability currently owns the mouse controls
+     */
+    public boolean hasSelectedSpecial() {
+        final int selected = mech.getSelectedSlot();
+        return isSpecialSlot(selected) && get(selected) != null;
     }
 
     @Nullable
@@ -118,9 +129,22 @@ public class AbilityManager {
 
         final Player pilot = mech.getPilot();
         if (pilot == null) {
+            syncedPilotId = -1;
             stopActive(true);
             stopAiming(null);
             mech.setSelectedSlot(-1);
+        }
+        else if (pilot.getId() != syncedPilotId) {
+            syncedPilotId = pilot.getId();
+            if (pilot instanceof ServerPlayer serverPilot) {
+                syncCooldowns(serverPilot);
+            }
+
+        }
+
+        tickToggles(pilot);
+
+        if (pilot == null) {
             return;
         }
 
@@ -138,6 +162,7 @@ public class AbilityManager {
                 }
                 else {
                     aimingTicks++;
+                    aimedAbility.onAimingTick(mech, pilot, aimingTicks);
                 }
 
             }
@@ -192,7 +217,12 @@ public class AbilityManager {
             return false;
         }
 
-        if (isSpecialSlot(slot) && mech.getSelectedSlot() != slot) {
+        // Toggles are switched on by their own key instead of being selected and then fired
+        if (isSpecialSlot(slot) && (ability.isToggle() || mech.getSelectedSlot() != slot)) {
+            return false;
+        }
+        // Basic attacks are always available, except while a selected special owns the mouse controls
+        if (!isSpecialSlot(slot) && hasSelectedSpecial()) {
             return false;
         }
         if (ability.aimTicks() > 0 && (!mech.isAiming() || aimingSlot != slot || aimingTicks < ability.aimTicks() || aimReleaseTicks > 0)) {
@@ -202,6 +232,7 @@ public class AbilityManager {
         stopActive(true);
 
         ability.onActivate(mech, pilot);
+        playAbilityAnimation(slot, AbilityAnimationPhase.ACTIVATE);
         mech.setEnergy(mech.getEnergy() - ability.energyCost());
         cooldowns[slot] = ability.cooldownTicks();
 
@@ -226,15 +257,109 @@ public class AbilityManager {
         return true;
     }
 
-    // The methods below here are set to change
+    private void tickToggles(@Nullable Player pilot) {
+        for (int slot = 0; slot < MAX_SPECIAL_SLOTS; slot++) {
+            if (!mech.isToggleActive(slot)) {
+                continue;
+            }
 
-    public void selectSpecial(int slot, Player pilot) {
-        final MechAbility ability = isSpecialSlot(slot) ? get(slot) : null;
-        if (ability != null && cooldowns[slot] > 0) {
+            final MechAbility ability = get(slot);
+            if (ability == null) {
+                stopToggle(slot, pilot, true);
+                continue;
+            }
+
+            toggleTicks[slot]++;
+
+            final float energyPerSecond = ability.energyCostPerSecond();
+            if (energyPerSecond > 0.0F && toggleTicks[slot] % 20 == 0) {
+                if (mech.getEnergy() < energyPerSecond) {
+                    stopToggle(slot, pilot, false);
+                    continue;
+                }
+
+                mech.setEnergy(mech.getEnergy() - energyPerSecond);
+                if (mech.getEnergy() <= 0.0F) {
+                    stopToggle(slot, pilot, false);
+                    continue;
+                }
+
+            }
+
+            ability.onTick(mech, pilot, toggleTicks[slot]);
+
+            // A toggle runs until it is switched off
+            if (ability.durationTicks() > 0 && toggleTicks[slot] >= ability.durationTicks()) {
+                stopToggle(slot, pilot, false);
+            }
+
+        }
+
+    }
+
+    /**
+     * Switches a special ability on or off
+     */
+    private void toggleSpecial(int slot, MechAbility ability, Player pilot) {
+        if (mech.isToggleActive(slot)) {
+            stopToggle(slot, pilot, false);
             return;
         }
 
-        final int selected = ability != null && mech.getSelectedSlot() != slot ? slot : -1;
+        if (cooldowns[slot] > 0 || !hasEnergyFor(ability) || !ability.canUse(mech, pilot)) {
+            return;
+        }
+
+        ability.onActivate(mech, pilot);
+        playAbilityAnimation(slot, AbilityAnimationPhase.ACTIVATE);
+        mech.setEnergy(mech.getEnergy() - ability.energyCost());
+
+        toggleTicks[slot] = 0;
+
+        mech.setToggleActive(slot, true);
+    }
+
+    private void stopToggle(int slot, @Nullable Player pilot, boolean interrupted) {
+        if (!mech.isToggleActive(slot)) {
+            return;
+        }
+
+        mech.setToggleActive(slot, false);
+        toggleTicks[slot] = 0;
+
+        final MechAbility ability = get(slot);
+        if (ability == null) {
+            return;
+        }
+
+        ability.onEnd(mech, pilot, interrupted);
+
+        // Losing the passenger interrupts the toggle
+        cooldowns[slot] = interrupted ? 0 : ability.cooldownTicks();
+
+        if (pilot instanceof ServerPlayer serverPilot) {
+            sendCooldown(serverPilot, slot);
+        }
+
+    }
+
+    /**
+     * Selects a special or directly switches a toggle special on/off
+     */
+    public void selectSpecialAbility(int slot, Player pilot) {
+        final MechAbility ability = isSpecialSlot(slot) ? get(slot) : null;
+        if (ability == null) {
+            return;
+        }
+        if (ability.isToggle()) {
+            toggleSpecial(slot, ability, pilot);
+            return;
+        }
+        if (cooldowns[slot] > 0) {
+            return;
+        }
+
+        final int selected = mech.getSelectedSlot() != slot ? slot : -1;
         if (selected == mech.getSelectedSlot()) {
             return;
         }
@@ -242,9 +367,12 @@ public class AbilityManager {
         stopAiming(pilot);
 
         mech.setSelectedSlot(selected);
+        if (selected >= 0 && ability.autoAimOnSelect()) {
+            startAiming(selected, pilot);
+        }
     }
 
-    // Right click over an special ability (if it requires it)
+    // Right click over a special ability (if it requires it)
     public boolean startAiming(int slot, Player pilot) {
         if (!isSpecialSlot(slot) || mech.getSelectedSlot() != slot || mech.isAiming()) {
             return false;
@@ -264,6 +392,7 @@ public class AbilityManager {
         mech.setAiming(true);
 
         ability.onStartAiming(mech, pilot);
+        playAbilityAnimation(slot, AbilityAnimationPhase.AIM);
 
         return true;
     }
@@ -273,7 +402,8 @@ public class AbilityManager {
             return;
         }
 
-        final MechAbility ability = get(aimingSlot);
+        final int stoppedSlot = aimingSlot;
+        final MechAbility ability = get(stoppedSlot);
 
         mech.setAiming(false);
 
@@ -283,6 +413,15 @@ public class AbilityManager {
 
         if (ability != null) {
             ability.onStopAiming(mech, pilot);
+            playAbilityAnimation(stoppedSlot, AbilityAnimationPhase.AIM_OFF);
+        }
+
+    }
+
+    private void playAbilityAnimation(int slot, AbilityAnimationPhase phase) {
+        final ResourceLocation abilityId = getId(slot);
+        if (abilityId != null) {
+            mech.playAbilityAnimation(abilityId, phase);
         }
 
     }
@@ -322,13 +461,35 @@ public class AbilityManager {
 
     }
 
+    private void syncCooldowns(ServerPlayer pilot) {
+        for (int slot = 0; slot < cooldowns.length; slot++) {
+            sendCooldown(pilot, slot);
+        }
+    }
+
+    private void sendCooldown(ServerPlayer pilot, int slot) {
+        Robots.NETWORK.sendTo(pilot, AbilityCooldownS2CPacket.TYPE.base(), new AbilityCooldownS2CPacket(mech.getId(), slot, cooldowns[slot]));
+    }
+
     public boolean isOnCooldown(int slot) {
         return isValidSlot(slot) && cooldowns[slot] > 0;
     }
 
     public boolean isEnergyDrainActive() {
-        final MechAbility ability = get(mech.getActiveSlot());
-        return ability != null && ability.energyCostPerSecond() > 0.0F;
+        final MechAbility active = get(mech.getActiveSlot());
+        if (active != null && active.energyCostPerSecond() > 0.0F) {
+            return true;
+        }
+
+        for (int slot = 0; slot < MAX_SPECIAL_SLOTS; slot++) {
+            final MechAbility ability = mech.isToggleActive(slot) ? get(slot) : null;
+            if (ability != null && ability.energyCostPerSecond() > 0.0F) {
+                return true;
+            }
+
+        }
+
+        return false;
     }
 
     // 1 just used, 0 available

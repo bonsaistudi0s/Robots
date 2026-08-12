@@ -3,6 +3,7 @@ package dev.xylonity.bonsai.robots.common.entity.mech;
 import dev.xylonity.bonsai.robots.Robots;
 import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
 import dev.xylonity.bonsai.robots.common.entity.ability.AbilityAnimationPhase;
+import dev.xylonity.bonsai.robots.config.RobotsConfig;
 import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
 import dev.xylonity.bonsai.robots.registry.RobotsSounds;
 import dev.xylonity.knightlib.api.animation.KnightLibAnim;
@@ -19,6 +20,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -37,12 +39,13 @@ public class TankMechEntity extends AbstractMechEntity {
     private static final KnightLibAnim AIM = KnightLibAnim.begin().thenPlayAndHold("animation.tank_mech.aim").overridePreviousAnimation();
     private static final KnightLibAnim AIM_OFF = KnightLibAnim.begin().thenPlay("animation.tank_mech.aim_off").overridePreviousAnimation().transition(5);
     private static final KnightLibAnim SHOOT_HAND = KnightLibAnim.begin().thenPlay("animation.tank_mech.shoot_hand").additive();
-    private static final KnightLibAnim SPRINT = KnightLibAnim.begin().thenPlay("animation.tank_mech.sprint");
-    private static final KnightLibAnim DEATH = KnightLibAnim.begin().thenPlay("animation.tank_mech.death");
+    private static final KnightLibAnim SPRINT = KnightLibAnim.begin().thenLoop("animation.tank_mech.sprint");
+    private static final KnightLibAnim DEATH = KnightLibAnim.begin().thenPlayAndHold("animation.tank_mech.death");
     private static final KnightLibAnim EXTRA_GUNS_UPGRADE = KnightLibAnim.begin().thenPlay("animation.tank_mech.extra_guns_upgrade");
     private static final KnightLibAnim ROCKET_ABILITY = KnightLibAnim.begin().thenPlay("animation.tank_mech.rocket_ability");
     private static final KnightLibAnim SHOOT = KnightLibAnim.begin().thenPlay("animation.tank_mech.shoot");
-    private static final KnightLibAnim ACTIVATE = KnightLibAnim.begin().thenPlay("animation.tank_mech.activate");
+    private static final KnightLibAnim DEACTIVATED = KnightLibAnim.begin().thenLoop("animation.tank_mech.deactivated");
+    private static final KnightLibAnim ACTIVATE = KnightLibAnim.begin().thenPlayAndHold("animation.tank_mech.activate");
 
     private static final ResourceLocation MODEL = Robots.of("geo/tank_mech.geo.json");
     private static final ResourceLocation ANIMATIONS = Robots.of("animations/tank_mech.animation.json");
@@ -60,7 +63,17 @@ public class TankMechEntity extends AbstractMechEntity {
         return createMechAttributes()
                 .add(Attributes.MAX_HEALTH, 120.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.16225D)
-                .add(Attributes.ATTACK_DAMAGE, 12.0D);
+                .add(Attributes.ATTACK_DAMAGE, RobotsConfig.TANK_MECH_MELEE_DAMAGE);
+    }
+
+    @Override
+    public boolean canSprint() {
+        return true;
+    }
+
+    @Override
+    protected double getSprintSpeedMultiplier() {
+        return RobotsConfig.TANK_MECH_SPRINT_SPEED_MULTIPLIER;
     }
 
     @Override
@@ -162,18 +175,69 @@ public class TankMechEntity extends AbstractMechEntity {
     }
 
     @Override
+    protected int getActivationDurationTicks() {
+        return 58;
+    }
+
+    @Override
+    protected void onActivationStarted(Player activator) {
+        this.playSound(RobotsSounds.TANK_MECH_ACTIVATE.get());
+    }
+
+    @Override
     public void registerAnimationControllers(KnightLibAnimationControllerRegistrar controllers) {
         controllers.add(KnightLibAnimationController.of("movementController")
                 .selects(this::movementPredicate)
-                .movementSpeed(getWalkBlocksPerCycle(), getWalkCycleSeconds())
+                .speed(this::movementAnimationSpeed)
                 .transition(5)
         );
 
     }
 
+    private double movementAnimationSpeed(KnightLibAnimationState state) {
+        if (!state.isMoving()) {
+            return 1.0D;
+        }
+        if (!this.isSprinting()) {
+            final double walkSpeed = state.blocksPerSecond() * getWalkCycleSeconds() / getWalkBlocksPerCycle();
+            return Math.min(KnightLibAnimationController.DEFAULT_MAX_MOVEMENT_SPEED,
+                    Math.max(
+                            KnightLibAnimationController.DEFAULT_MIN_MOVEMENT_SPEED,
+                            walkSpeed
+                    )
+            );
+
+        }
+
+        final float blockFriction = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction();
+        final double movementSpeed = this.getAttributeValue(Attributes.MOVEMENT_SPEED) * Math.max(1.0D, this.getSprintSpeedMultiplier());
+        final double acceleration;
+        final double drag;
+        if (this.onGround()) {
+            acceleration = movementSpeed * (0.21600002D / (blockFriction * blockFriction * blockFriction));
+            drag = blockFriction * 0.91D;
+        }
+        else {
+            acceleration = movementSpeed * 0.1D;
+            drag = 0.91D;
+        }
+
+        final double sprintSpeed = acceleration / Math.max(1.0E-6D, 1.0D - drag);
+        return Math.min(1.0D, state.blocksPerTick() / sprintSpeed);
+    }
+
     private KnightLibAnim movementPredicate(KnightLibAnimationState state) {
+        if (this.isDeadOrDying()) {
+            return DEATH;
+        }
+        if (this.isDeactivated()) {
+            return DEACTIVATED;
+        }
+        if (this.isActivating()) {
+            return ACTIVATE;
+        }
         if (state.isMoving()) {
-            return WALK;
+            return this.isSprinting() ? SPRINT : WALK;
         }
         else {
             return IDLE;
@@ -182,8 +246,13 @@ public class TankMechEntity extends AbstractMechEntity {
     }
 
     @Override
+    protected int getDeathDurationTicks() {
+        return 40;
+    }
+
+    @Override
     public void onAnimationKeyframe(KnightLibKeyframeEvent event) {
-        if (event.type() != KnightLibKeyframeEvent.Type.SOUND || !"animation.tank_mech.walk".equals(event.animation())) {
+        if (event.type() != KnightLibKeyframeEvent.Type.SOUND || !("animation.tank_mech.walk".equals(event.animation()) || "animation.tank_mech.sprint".equals(event.animation()))) {
             return;
         }
 

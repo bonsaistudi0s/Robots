@@ -36,10 +36,24 @@ public interface MechAbility {
     }
 
     /**
+     * Special abilities that stay switched on until their key is pressed again (basic abilities are always selected)
+     */
+    default boolean isToggle() {
+        return false;
+    }
+
+    /**
      * Preparation time before the ability is able to be used
      */
     default int aimTicks() {
         return 0;
+    }
+
+    /**
+     * Whether selecting this special ability should immediately enter its aiming state
+     */
+    default boolean autoAimOnSelect() {
+        return false;
     }
 
     /**
@@ -59,11 +73,15 @@ public interface MechAbility {
         ;;
     }
 
+    default void onAimingTick(AbstractMechEntity mech, Player pilot, int aimingTicks) {
+        ;;
+    }
+
     default void onStopAiming(AbstractMechEntity mech, @Nullable Player pilot) {
         ;;
     }
 
-    default void onTick(AbstractMechEntity mech, Player pilot, int ticksActive) {
+    default void onTick(AbstractMechEntity mech, @Nullable Player pilot, int ticksActive) {
         ;;
     }
 
