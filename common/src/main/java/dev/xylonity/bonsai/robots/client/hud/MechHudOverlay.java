@@ -10,22 +10,29 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 /**
- * Not an screen per se, there isn't really need to use one at all here
+ * Not a screen per se, there isn't really need to use one at all here
  */
 public final class MechHudOverlay {
 
     private static final ResourceLocation UI = Robots.of("textures/entity/mech_ui.png");
 
-    private static final int SLOT_SIZE = 16;
-    private static final int SLOT_STRIDE = 17;
+    private static final int ICON_SIZE = 16;
+    private static final int SLOT_BORDER_SIZE = 18;
+    private static final int SLOT_FRAME = 20;
+    private static final int SELECTED_FRAME_SIZE = 20;
 
-    private static final int HEART_WIDTH = 20;
+    private static final int HEART_WIDTH = 22;
+    private static final int HEART_HEIGHT = 19;
+    private static final int HEART_FILL_WIDTH = 14;
     private static final int HEART_FILL_HEIGHT = 10;
 
-    private static final int BAR_WIDTH = 104;
-    private static final int BAR_HEIGHT = 3;
+    private static final int ENERGY_BAR_WIDTH = 122;
+    private static final int ENERGY_BAR_HEIGHT = 3;
 
-    // The code is also expected to change slightly, because some mech may not have exactly 5 attack slots
+    private static final int PLAYER_BAR_WIDTH = 51;
+    private static final int PLAYER_BAR_HEIGHT = 7;
+
+    private static final int BASICS_GAP = 2;
 
     public static void render(GuiGraphics graphics, float partialTick) {
         final Minecraft minecraft = Minecraft.getInstance();
@@ -46,73 +53,93 @@ public final class MechHudOverlay {
         final boolean hasSecondary = abilities.get(AbilityManager.SECONDARY_SLOT) != null;
         final int simples = (hasPrimary ? 1 : 0) + (hasSecondary ? 1 : 0);
 
-        // Specials -> heart -> 1 pixel offset -> quick attacks
-        final int specialsWidth = specials > 0 ? specials * SLOT_STRIDE - 1 : 0;
-        final int simplesWidth = simples > 0 ? simples * SLOT_STRIDE - 1 : 0;
-        final int rowWidth = specialsWidth + HEART_WIDTH + (simples > 0 ? 1 + simplesWidth : 0);
+        // Slot selection frame additional separation
+        final int specialsWidth = specials * SLOT_FRAME;
+        final int basicsWidth = simples > 0 ? (simples - 1) * SLOT_FRAME + SLOT_BORDER_SIZE : 0;
+        final int rowWidth = specialsWidth + HEART_WIDTH + (simples > 0 ? BASICS_GAP + basicsWidth : 0);
 
         final int rowX = width / 2 - rowWidth / 2;
-        final int rowY = height - SLOT_SIZE - 4;
+        final int rowY = height - HEART_HEIGHT - 4;
 
         // specials
         for (int i = 0; i < specials; i++) {
-            drawSlot(graphics, mech, i, rowX + i * SLOT_STRIDE, rowY);
+            drawSlot(graphics, mech, i, rowX + i * SLOT_FRAME, rowY);
         }
 
         // Heart
         final int heartX = rowX + specialsWidth;
-        graphics.blit(UI, heartX, rowY, 50, 0, HEART_WIDTH, 16);
+        graphics.blit(UI, heartX, rowY, 60, 0, HEART_WIDTH, HEART_HEIGHT);
 
         // Culling for the actual heart hp asset
         final float health = Mth.clamp(mech.getHealth() / mech.getMaxHealth(), 0.0F, 1.0F);
         final int fill = health <= 0.0F ? 0 : Math.max(1, Math.round(HEART_FILL_HEIGHT * health));
         if (fill > 0) {
             final int cut = HEART_FILL_HEIGHT - fill;
-            graphics.blit(UI, heartX + 3, rowY + 3 + cut, 53, 19 + cut, 14, fill);
+            graphics.blit(UI, heartX + 4, rowY + 4 + cut, 64, 23 + cut, HEART_FILL_WIDTH, fill);
         }
 
-        // simples
-        int simplesX = heartX + HEART_WIDTH + 1;
+        // Basic attacks
+        int basicsX = heartX + HEART_WIDTH + BASICS_GAP;
         if (hasPrimary) {
-            drawSlot(graphics, mech, AbilityManager.PRIMARY_SLOT, simplesX, rowY);
-            simplesX += SLOT_STRIDE;
+            drawSlot(graphics, mech, AbilityManager.PRIMARY_SLOT, basicsX, rowY);
+            basicsX += SLOT_FRAME;
         }
         if (hasSecondary) {
-            drawSlot(graphics, mech, AbilityManager.SECONDARY_SLOT, simplesX, rowY);
+            drawSlot(graphics, mech, AbilityManager.SECONDARY_SLOT, basicsX, rowY);
         }
 
-        // Energy bar on top
-        final int barX = width / 2 - BAR_WIDTH / 2;
-        final int barY = rowY - BAR_HEIGHT - 3;
-        graphics.blit(UI, barX, barY, 0, 32, BAR_WIDTH, BAR_HEIGHT);
+        // Energy bar
+        final int energyX = width / 2 - ENERGY_BAR_WIDTH / 2;
+        final int energyY = rowY - ENERGY_BAR_HEIGHT - 3;
+        graphics.blit(UI, energyX, energyY, 0, 38, ENERGY_BAR_WIDTH, ENERGY_BAR_HEIGHT);
 
-        // Culling for the actual energy bar progression
-        final int energyWidth = Math.round(BAR_WIDTH * Mth.clamp(mech.getEnergy() / mech.getMaxEnergy(), 0.0F, 1.0F));
+        final int energyWidth = fillWidth(mech.getEnergy() / mech.getMaxEnergy(), ENERGY_BAR_WIDTH);
         if (energyWidth > 0) {
-            graphics.blit(UI, barX, barY, 0, 35, energyWidth, BAR_HEIGHT);
+            graphics.blit(UI, energyX, energyY, 0, 41, energyWidth, ENERGY_BAR_HEIGHT);
         }
+
+        // Player health and hunger bars are render above the energy bar
+        final int playerBarsY = energyY - PLAYER_BAR_HEIGHT - 1;
+        drawPlayerBar(graphics, energyX, playerBarsY, player.getHealth() / player.getMaxHealth(), 50);
+        drawPlayerBar(graphics, energyX + ENERGY_BAR_WIDTH - PLAYER_BAR_WIDTH, playerBarsY, player.getFoodData().getFoodLevel() / 20.0F, 55);
     }
 
     private static void drawSlot(GuiGraphics graphics, AbstractMechEntity mech, int slot, int x, int y) {
         final AbilityManager abilities = mech.getAbilityManager();
 
-        graphics.blit(UI, x, y, 0, 0, SLOT_SIZE, SLOT_SIZE);
+        graphics.blit(UI, x, y, 0, 0, SLOT_BORDER_SIZE, SLOT_BORDER_SIZE);
 
         final ResourceLocation id = abilities.getId(slot);
         if (id != null) {
-            graphics.blit(mech.getAbilityIcon(id), x, y, 0, 0.0F, 0.0F, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE, SLOT_SIZE);
-        }
-
-        if (mech.getSelectedSlot() == slot || mech.isToggleActive(slot)) {
-            graphics.fill(x, y, x + SLOT_SIZE, y + SLOT_SIZE, 0x66000000);
+            graphics.blit(mech.getAbilityIcon(id), x + 1, y + 1, 0, 0.0F, 0.0F, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
         }
 
         final float cooldown = abilities.getCooldownProgress(slot);
         if (cooldown > 0.0F) {
-            final int overlay = Math.round(SLOT_SIZE * cooldown);
-            graphics.fill(x, y + SLOT_SIZE - overlay, x + SLOT_SIZE, y + SLOT_SIZE, 0x88FFFFFF);
+            final int overlay = Math.round(ICON_SIZE * cooldown);
+            graphics.fill(x + 1, y + 1 + ICON_SIZE - overlay, x + 1 + ICON_SIZE, y + 1 + ICON_SIZE, 0x88FFFFFF);
         }
 
+        // Basic abilities are permanent, not selections per se, so they shouldn't use the selection frame
+        // Renders the selection frame
+        if (mech.getSelectedSlot() == slot || mech.isToggleActive(slot)) {
+            graphics.blit(UI, x - 1, y - 1, 0, 59, SELECTED_FRAME_SIZE, SELECTED_FRAME_SIZE);
+        }
+
+    }
+
+    private static void drawPlayerBar(GuiGraphics graphics, int x, int y, float progress, int fillV) {
+        graphics.blit(UI, x, y, PLAYER_BAR_WIDTH, PLAYER_BAR_HEIGHT, 0, 44, PLAYER_BAR_WIDTH, 5, 256, 256);
+
+        final int filled = fillWidth(progress, 49);
+        if (filled > 0) {
+            graphics.blit(UI, x + 1, y + 1, filled, 5, 1, fillV, filled, 3, 256, 256);
+        }
+    }
+
+    private static int fillWidth(float progress, int width) {
+        final float clamped = Mth.clamp(progress, 0.0F, 1.0F);
+        return clamped <= 0.0F ? 0 : Math.max(1, Math.round(width * clamped));
     }
 
 }
