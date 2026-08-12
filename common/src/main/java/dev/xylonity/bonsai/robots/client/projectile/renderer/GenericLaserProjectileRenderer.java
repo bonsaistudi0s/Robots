@@ -1,7 +1,7 @@
 package dev.xylonity.bonsai.robots.client.projectile.renderer;
 
 import dev.xylonity.bonsai.robots.Robots;
-import dev.xylonity.bonsai.robots.client.util.RobotsRenderTypes;
+import dev.xylonity.bonsai.robots.registry.RobotsRenderTypes;
 import dev.xylonity.bonsai.robots.common.entity.projectile.LaserProjectileEntity;
 import dev.xylonity.knightlib.client.animation.model.KnightLibModel;
 import net.minecraft.client.renderer.RenderType;
