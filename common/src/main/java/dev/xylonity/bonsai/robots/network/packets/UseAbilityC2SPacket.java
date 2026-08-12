@@ -8,7 +8,7 @@ import dev.xylonity.knightlib.network.ServerboundPacketType;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * The pilot uses the selected ability
+ * Requests use of a basic ability or the currently selected special ability
  */
 public record UseAbilityC2SPacket(
         int slot
@@ -22,9 +22,9 @@ public record UseAbilityC2SPacket(
                     buf -> new UseAbilityC2SPacket(buf.readVarInt())),
             UseAbilityC2SPacket::handle);
 
-    private static void handle(UseAbilityC2SPacket pkt, ServerPlayer player) {
+    private static void handle(UseAbilityC2SPacket packet, ServerPlayer player) {
         if (player.getVehicle() instanceof AbstractMechEntity mech && mech.getControllingPassenger() == player) {
-            mech.getAbilityManager().tryUse(pkt.slot(), player);
+            mech.getAbilityManager().tryUse(packet.slot(), player);
         }
 
     }

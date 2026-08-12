@@ -8,7 +8,7 @@ import dev.xylonity.knightlib.network.ServerboundPacketType;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * Switches the current ability without activating it
+ * Selects or deselects a special ability without activating it
  */
 public record SelectAbilityC2SPacket(
         int slot
@@ -22,9 +22,9 @@ public record SelectAbilityC2SPacket(
                     buf -> new SelectAbilityC2SPacket(buf.readVarInt())),
             SelectAbilityC2SPacket::handle);
 
-    private static void handle(SelectAbilityC2SPacket pkt, ServerPlayer player) {
+    private static void handle(SelectAbilityC2SPacket packet, ServerPlayer player) {
         if (player.getVehicle() instanceof AbstractMechEntity mech && mech.getControllingPassenger() == player) {
-            mech.getAbilityManager().selectAbilityGroup(pkt.slot(), player);
+            mech.getAbilityManager().selectSpecialAbility(packet.slot(), player);
         }
 
     }
