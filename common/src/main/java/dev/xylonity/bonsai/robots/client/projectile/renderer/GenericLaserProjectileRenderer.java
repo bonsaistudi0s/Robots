@@ -4,6 +4,7 @@ import dev.xylonity.bonsai.robots.Robots;
 import dev.xylonity.bonsai.robots.registry.RobotsRenderTypes;
 import dev.xylonity.bonsai.robots.common.entity.projectile.LaserProjectileEntity;
 import dev.xylonity.knightlib.client.animation.model.KnightLibModel;
+import dev.xylonity.knightlib.registry.KnightLibRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
@@ -27,7 +28,7 @@ public class GenericLaserProjectileRenderer<T extends LaserProjectileEntity> ext
 
     @Override
     protected RenderType getRenderType(T laser, ResourceLocation texture) {
-        return RobotsRenderTypes.entityEmissiveDepth(texture);
+        return KnightLibRenderTypes.entityUnshadedEmissive(texture, true);
     }
 
     @Override
