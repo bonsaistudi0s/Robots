@@ -88,6 +88,8 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
     public float clientLegsYaw;
     public float clientTorsoYaw;
     public boolean clientYawInitialized;
+    public float clientTorsoPitch;
+    public boolean clientPitchInitialized;
 
     // Client-only helpers to handle whether the legs should face the movement direction
     public boolean clientLegsReversed;

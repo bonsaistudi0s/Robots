@@ -54,11 +54,17 @@ public class TankMechRenderer extends AbstractMechRenderer<TankMechEntity> {
     protected void setupPose(TankMechEntity entity, KnightLibModel model, float partialTick) {
         super.setupPose(entity, model, partialTick);
 
-        // Additional pitch rotation to wherever the player is looking at
-        final Player pilot = entity.getPilot();
-        if (pilot != null && model.hasBone(TORSO_BONE)) {
-            final float pitch = Mth.clamp(pilot.getViewXRot(partialTick), -22.5f, 22.5f);
-            model.applyRotation(TORSO_BONE, pitch, 0.0F, 0.0F);
+        // Saves the latest pitch rotation after the player unmounts so the mech keeps looking to that direction
+        if (model.hasBone(TORSO_BONE)) {
+            final Player pilot = entity.getPilot();
+            if (pilot != null) {
+                entity.clientTorsoPitch = Mth.clamp(pilot.getViewXRot(partialTick), -22.5F, 22.5F);
+                entity.clientPitchInitialized = true;
+            }
+            if (entity.clientPitchInitialized) {
+                model.applyRotation(TORSO_BONE, entity.clientTorsoPitch, 0.0F, 0.0F);
+            }
+
         }
 
     }
