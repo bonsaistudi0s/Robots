@@ -1,6 +1,112 @@
 {
 	"format_version": "1.8.0",
 	"animations": {
+		"animation.tank_mech.deactivated": {
+			"loop": true,
+			"bones": {
+				"body": {
+					"rotation": [-12.5, 0, 0],
+					"position": [0, -27, 0]
+				},
+				"body_player_control": {
+					"rotation": [15, 0, 0]
+				},
+				"laser": {
+					"position": [0, 0, 2]
+				},
+				"left_arm": {
+					"rotation": [0, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"left_arm_2": {
+					"rotation": [-70, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"left_handgun": {
+					"rotation": [0, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"left_hand_2": {
+					"rotation": [0, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"left_finger_2": {
+					"rotation": [15, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"left_finger_3": {
+					"rotation": [22.5, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"left_finger_1": {
+					"rotation": [15, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"right_arm": {
+					"rotation": [-65, 6, 0],
+					"position": [0, -12, 4]
+				},
+				"right_arm_2": {
+					"rotation": [0, 0, 7.5],
+					"position": [0, 0, 0]
+				},
+				"right_hand_1": {
+					"rotation": [0, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"right_handgun": {
+					"rotation": [0, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"right_hand_2": {
+					"rotation": [0, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"right_finger_2": {
+					"rotation": [10, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"right_finger_3": {
+					"rotation": [10, 0, 0],
+					"position": [0, 0, 2]
+				},
+				"right_finger_1": {
+					"rotation": [-8, 0, -8],
+					"position": [0, 0, 0]
+				},
+				"right_leg": {
+					"rotation": [-112.5, 0, 0],
+					"position": [0, -23, -1]
+				},
+				"right_leg_2": {
+					"rotation": [-77.5, 4, 0],
+					"position": [0, -9, -13]
+				},
+				"right_leg_3": {
+					"rotation": [42.5, 0, 0]
+				},
+				"right_leg_4": {
+					"rotation": [62.5, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"left_leg": {
+					"rotation": [-87.5, 0, 0],
+					"position": [0, -23, -4]
+				},
+				"left_leg_2": {
+					"rotation": [-90, 0, 0],
+					"position": [0, -13, -18]
+				},
+				"left_leg_3": {
+					"rotation": [50, 0, 0],
+					"position": [0, 0, 0]
+				},
+				"left_leg_4": {
+					"rotation": [47.5, 0, 0],
+					"position": [0, 0, 0]
+				}
+			}
+		},
 		"animation.tank_mech.idle": {
 			"loop": true,
 			"animation_length": 2.875,
@@ -2715,16 +2821,16 @@
 			},
 			"sound_effects": {
 				"0.0": {
-					"effect": "sprint_1"
+					"effect": "walk_1"
 				},
-				"0.1667": {
-					"effect": "sprint_2"
+				"0.25": {
+					"effect": "walk_2"
 				},
 				"0.5": {
-					"effect": "sprint_3"
+					"effect": "walk_3"
 				},
-				"0.7083": {
-					"effect": "sprint_4"
+				"0.75": {
+					"effect": "walk_4"
 				}
 			}
 		},
@@ -3409,6 +3515,33 @@
 			"animation_length": 2,
 			"bones": {
 				"body_2": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.4167": {
+							"vector": [6, 0, 0],
+							"easing": "easeInOutSine"
+						},
+						"0.5417": {
+							"vector": [5, 0, 0],
+							"easing": "easeInOutSine"
+						},
+						"1.0": {
+							"vector": [5, 0, 0],
+							"easing": "easeInOutSine"
+						},
+						"1.2917": {
+							"vector": [7, 0, 0],
+							"easing": "easeInOutSine"
+						},
+						"2.0": {
+							"vector": [0, 0, 0],
+							"easing": "easeInOutSine"
+						}
+					}
+				},
+				"body_player_control": {
 					"rotation": {
 						"0.0": {
 							"vector": [0, 0, 0]
