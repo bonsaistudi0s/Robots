@@ -25,8 +25,8 @@ public class TankMechRenderer extends AbstractMechRenderer<TankMechEntity> {
     public TankMechRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, 1.5f);
         addRenderLayer(new TankMechRiderLayer());
-        addRenderLayer(new GenericMechElectricFieldLayer<>(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) ? ELECTRIC_FIELD : null));
         addEmissiveLayer(tankMechEntity -> Robots.of("textures/entity/tank_mech/tank_mech_glow.png"));
+        addRenderLayer(new GenericMechElectricFieldLayer<>(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) ? ELECTRIC_FIELD : null));
     }
 
     @Override
