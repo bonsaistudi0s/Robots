@@ -1,10 +1,7 @@
 package dev.xylonity.bonsai.robots.client.entity.renderer;
 
 import dev.xylonity.bonsai.robots.Robots;
-import dev.xylonity.bonsai.robots.client.entity.layer.GenericMechElectricFieldLayer;
-import dev.xylonity.bonsai.robots.client.entity.layer.TankMechRiderLayer;
 import dev.xylonity.bonsai.robots.common.entity.mech.ShieldMechEntity;
-import dev.xylonity.bonsai.robots.common.entity.mech.TankMechEntity;
 import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
 import dev.xylonity.knightlib.client.animation.KnightLibAnimationSource;
 import dev.xylonity.knightlib.client.animation.KnightLibModelSource;
@@ -21,7 +18,7 @@ public class ShieldMechRenderer extends AbstractMechRenderer<ShieldMechEntity> {
         super(renderManager, 1.5f);
         //addRenderLayer(new TankMechRiderLayer());
         addEmissiveLayer(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) ? null : Robots.of("textures/entity/shield_mech/shield_mech_glow.png"));
-        addRenderLayer(new GenericMechElectricFieldLayer<>(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) ? ELECTRIC_FIELD : null));
+        //addRenderLayer(new GenericMechElectricFieldLayer<>(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) ? ELECTRIC_FIELD : null));
     }
 
     @Override
@@ -49,7 +46,7 @@ public class ShieldMechRenderer extends AbstractMechRenderer<ShieldMechEntity> {
     }
 
     @Override
-    public ResourceLocation getTextureLocation(ShieldMechEntity tankMechEntity) {
+    public ResourceLocation getTextureLocation(ShieldMechEntity entity) {
         return Robots.of("textures/entity/shield_mech/shield_mech.png");
     }
 
@@ -64,7 +61,7 @@ public class ShieldMechRenderer extends AbstractMechRenderer<ShieldMechEntity> {
     }
 
     @Override
-    protected KnightLibModelSource defineModel(ShieldMechEntity tankMechEntity) {
+    protected KnightLibModelSource defineModel(ShieldMechEntity entity) {
         return KnightLibModelSource.geo(Robots.of("geo/shield_mech.geo.json"));
     }
 
