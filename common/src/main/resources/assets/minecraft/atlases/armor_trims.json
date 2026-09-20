@@ -3,7 +3,8 @@
     {
       "type": "minecraft:paletted_permutations",
       "textures": [
-        "robots:entity/tank_mech/tank_mech"
+        "robots:entity/tank_mech/tank_mech",
+        "robots:entity/shield_mech/shield_mech"
       ],
       "palette_key": "robots:entity/mech/palettes/base",
       "permutations": {
