@@ -1,0 +1,9 @@
+{
+  "creativetab.robots.title": "Robots",
+  "block.robots.battery_cell": "Battery Cell",
+  "block.robots.battery_cell_charged": "Charged Battery Cell",
+  "entity.robots.tank_mech": "Tank Mech",
+  "entity.robots.tall_mech": "Tall Mech",
+  "item.robots.tank_mech_spawn_egg": "Tank Mech Spawn Egg",
+  "item.robots.tall_mech_spawn_egg": "Tall Mech Spawn Egg"
+}
