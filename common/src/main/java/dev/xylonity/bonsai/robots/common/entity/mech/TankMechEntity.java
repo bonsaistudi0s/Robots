@@ -200,13 +200,7 @@ public class TankMechEntity extends AbstractMechEntity {
         }
         if (!this.isSprinting()) {
             final double walkSpeed = state.blocksPerSecond() * getWalkCycleSeconds() / getWalkBlocksPerCycle();
-            return Math.min(KnightLibAnimationController.DEFAULT_MAX_MOVEMENT_SPEED,
-                    Math.max(
-                            KnightLibAnimationController.DEFAULT_MIN_MOVEMENT_SPEED,
-                            walkSpeed
-                    )
-            );
-
+            return Math.min(3.0D, Math.max(0.25D, walkSpeed));
         }
 
         final float blockFriction = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction();
