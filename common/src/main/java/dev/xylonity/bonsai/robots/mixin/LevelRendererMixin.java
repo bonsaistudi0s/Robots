@@ -1,6 +1,7 @@
 package dev.xylonity.bonsai.robots.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
 import dev.xylonity.bonsai.robots.common.entity.mech.TankMechEntity;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -18,7 +19,7 @@ public class LevelRendererMixin {
 
     @Inject(method = "renderEntity", at = @At("HEAD"), cancellable = true)
     private void robots$skipMechPassenger(Entity entity, double camX, double camY, double camZ, float partialTick, PoseStack poseStack, MultiBufferSource buffers, CallbackInfo ci) {
-        if (entity.getVehicle() instanceof TankMechEntity) {
+        if (entity.getVehicle() instanceof AbstractMechEntity) {
             ci.cancel();
         }
 
