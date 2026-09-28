@@ -1,15 +1,22 @@
 package dev.xylonity.bonsai.robots.common.entity.mech;
 
+import dev.xylonity.bonsai.robots.Robots;
 import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
+import dev.xylonity.bonsai.robots.common.entity.movement.GroundMechLocomotion;
+import dev.xylonity.bonsai.robots.common.entity.movement.MechLocomotion;
 import dev.xylonity.bonsai.robots.config.RobotsConfig;
+import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
 import dev.xylonity.knightlib.api.animation.KnightLibAnim;
 import dev.xylonity.knightlib.api.animation.KnightLibAnimationController;
 import dev.xylonity.knightlib.api.animation.KnightLibAnimationControllerRegistrar;
 import dev.xylonity.knightlib.api.animation.KnightLibAnimationState;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
+
+import java.util.List;
 
 public class ShieldMechEntity extends AbstractMechEntity {
 
@@ -33,11 +40,34 @@ public class ShieldMechEntity extends AbstractMechEntity {
         super(type, level);
     }
 
+    @Override
+    public MechLocomotion getLocomotion() {
+        return GroundMechLocomotion.WALKING;
+    }
+
     public static AttributeSupplier.Builder createAttributes() {
         return createMechAttributes()
                 .add(Attributes.MAX_HEALTH, 120.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.16225D)
                 .add(Attributes.ATTACK_DAMAGE, RobotsConfig.TANK_MECH_MELEE_DAMAGE);
+    }
+
+    @Override
+    public List<ResourceLocation> getSpecialAbilities() {
+        return List.of(RobotsAbilities.ELECTRIC_FIELD, RobotsAbilities.SHIELD_SPHERE);
+    }
+
+    @Override
+    public ResourceLocation getAbilityIcon(ResourceLocation abilityId) {
+        if (RobotsAbilities.ELECTRIC_FIELD.equals(abilityId)) {
+            return Robots.of("textures/entity/tank_mech/icons/electric_field_icon.png");
+        }
+        // Placeholder until the sphere gets its own icon
+        if (RobotsAbilities.SHIELD_SPHERE.equals(abilityId)) {
+            return Robots.of("textures/entity/tank_mech/icons/rocket_icon.png");
+        }
+
+        return super.getAbilityIcon(abilityId);
     }
 
     @Override
@@ -64,32 +94,6 @@ public class ShieldMechEntity extends AbstractMechEntity {
         );
 
         controllers.add(KnightLibAnimationController.of("miscController").selects(() -> SHIELD_ABILITY_OFF));
-    }
-
-    private double movementAnimationSpeed(KnightLibAnimationState state) {
-        if (!state.isMoving()) {
-            return 1.0D;
-        }
-        if (!this.isSprinting()) {
-            final double walkSpeed = state.blocksPerSecond() * getWalkCycleSeconds() / getWalkBlocksPerCycle();
-            return Math.min(3.0D, Math.max(0.25D, walkSpeed));
-        }
-
-        final float blockFriction = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction();
-        final double movementSpeed = this.getAttributeValue(Attributes.MOVEMENT_SPEED) * Math.max(1.0D, this.getSprintSpeedMultiplier());
-        final double acceleration;
-        final double drag;
-        if (this.onGround()) {
-            acceleration = movementSpeed * (0.21600002D / (blockFriction * blockFriction * blockFriction));
-            drag = blockFriction * 0.91D;
-        }
-        else {
-            acceleration = movementSpeed * 0.1D;
-            drag = 0.91D;
-        }
-
-        final double sprintSpeed = acceleration / Math.max(1.0E-6D, 1.0D - drag);
-        return Math.min(1.0D, state.blocksPerTick() / sprintSpeed);
     }
 
     private KnightLibAnim movementPredicate(KnightLibAnimationState state) {
