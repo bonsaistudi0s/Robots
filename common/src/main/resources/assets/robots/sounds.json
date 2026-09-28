@@ -363,7 +363,11 @@
   "tank_mech_idle": {
     "sounds": [
       "robots:tank_mech/tank_mech_idle_1",
-      "robots:tank_mech/tank_mech_idle_2",
+      "robots:tank_mech/tank_mech_idle_2"
+    ]
+  },
+  "tank_mech_idle_3": {
+    "sounds": [
       "robots:tank_mech/tank_mech_idle_3"
     ]
   }

@@ -77,6 +77,7 @@ public final class RobotsSounds {
     public static final ResourceEntry<SoundEvent> TANK_MECH_ACTIVATE = register("tank_mech_activate");
     public static final ResourceEntry<SoundEvent> TANK_MECH_DEATH = register("tank_mech_death");
     public static final ResourceEntry<SoundEvent> TANK_MECH_IDLE = register("tank_mech_idle");
+    public static final ResourceEntry<SoundEvent> TANK_MECH_IDLE_3 = register("tank_mech_idle_3");
 
     private static ResourceEntry<SoundEvent> register(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(Robots.of(name)));

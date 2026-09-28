@@ -225,7 +225,24 @@ public class TankMechEntity extends AbstractMechEntity {
 
     @Override
     public void onAnimationKeyframe(KnightLibKeyframeEvent event) {
-        if (event.type() != KnightLibKeyframeEvent.Type.SOUND || !("animation.tank_mech.walk".equals(event.animation()) || "animation.tank_mech.sprint".equals(event.animation()))) {
+        if (event.type() != KnightLibKeyframeEvent.Type.SOUND) {
+            return;
+        }
+
+        if ("animation.tank_mech.idle".equals(event.animation())) {
+            final SoundEvent idle = switch (event.payload()) {
+                case "idle_1" -> RobotsSounds.TANK_MECH_IDLE.get();
+                case "idle_2" -> RobotsSounds.TANK_MECH_IDLE_3.get();
+                default -> null;
+            };
+            if (idle != null) {
+                this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), idle, this.getSoundSource(), 1.0F, 1.0F, false);
+            }
+
+            return;
+        }
+
+        if (!("animation.tank_mech.walk".equals(event.animation()) || "animation.tank_mech.sprint".equals(event.animation()))) {
             return;
         }
 
