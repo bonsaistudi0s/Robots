@@ -260,7 +260,7 @@
 				{
 					"name": "player",
 					"parent": "body_player_control",
-					"pivot": [0, 40, 5.5]
+					"pivot": [0, 41, 5.5]
 				},
 				{
 					"name": "shield_ability",

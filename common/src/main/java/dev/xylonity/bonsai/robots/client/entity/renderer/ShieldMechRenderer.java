@@ -3,6 +3,7 @@ package dev.xylonity.bonsai.robots.client.entity.renderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.xylonity.bonsai.robots.Robots;
 import dev.xylonity.bonsai.robots.client.entity.layer.GenericMechElectricFieldLayer;
+import dev.xylonity.bonsai.robots.client.entity.layer.GenericMechRiderLayer;
 import dev.xylonity.bonsai.robots.client.render.ForceFieldSphere;
 import dev.xylonity.bonsai.robots.client.render.MechForceFieldTextures;
 import dev.xylonity.bonsai.robots.common.entity.mech.ShieldMechEntity;
@@ -26,7 +27,7 @@ public class ShieldMechRenderer extends AbstractMechRenderer<ShieldMechEntity> {
 
     public ShieldMechRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, 1.5f);
-        //addRenderLayer(new TankMechRiderLayer());
+        addRenderLayer(new GenericMechRiderLayer<>());
 
         addEmissiveLayer(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) ? null : GLOW_TEXTURE);
         addRenderLayer(new GenericMechElectricFieldLayer<>(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) ? ELECTRIC_FIELD : null));
@@ -45,10 +46,10 @@ public class ShieldMechRenderer extends AbstractMechRenderer<ShieldMechEntity> {
     //    }
 //
     //    poseStack.pushPose();
-    //
+//
     //    poseStack.translate(0.0F, 1.5f, 0.0F);
     //    ForceFieldSphere.render(poseStack, buffers, texture, SPHERE_RADIUS);
-    //
+//
     //    poseStack.popPose();
     //}
 

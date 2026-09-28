@@ -2,27 +2,29 @@ package dev.xylonity.bonsai.robots.client.entity.layer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import dev.xylonity.bonsai.robots.common.entity.mech.TankMechEntity;
+import dev.xylonity.bonsai.robots.client.util.HeldItemRenderContext;
+import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
 import dev.xylonity.knightlib.client.animation.layer.KnightLibRenderLayer;
 import dev.xylonity.knightlib.client.animation.layer.KnightLibRenderLayerContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.Set;
 
-public class TankMechRiderLayer extends KnightLibRenderLayer<TankMechEntity> {
+public class GenericMechRiderLayer<T extends AbstractMechEntity> extends KnightLibRenderLayer<T> {
 
     @Override
-    public boolean shouldRender(KnightLibRenderLayerContext<TankMechEntity> context) {
+    public boolean shouldRender(KnightLibRenderLayerContext<T> context) {
         return context.target().isVehicle();
     }
 
     @Override
-    public void render(final KnightLibRenderLayerContext<TankMechEntity> context) {
+    public void render(final KnightLibRenderLayerContext<T> context) {
         final Minecraft minecraft = Minecraft.getInstance();
-        final TankMechEntity mech = context.target();
+        final T mech = context.target();
         final PoseStack poseStack = context.poseStack();
         final float partialTick = context.partialTick();
 
@@ -40,10 +42,22 @@ public class TankMechRiderLayer extends KnightLibRenderLayer<TankMechEntity> {
                 }
 
                 poseStack.pushPose();
-                poseStack.mulPose(Axis.YP.rotationDegrees(bodyYaw + 180));
-                poseStack.translate(0, -0.7, 0);
-                renderer.render(passenger, 0f, partialTick, poseStack, context.buffers(), context.packedLight());
-                poseStack.popPose();
+                try {
+                    poseStack.mulPose(Axis.YP.rotationDegrees(bodyYaw + 180));
+                    poseStack.translate(0, 0.7F, 0);
+
+                    if (passenger instanceof Player) {
+                        HeldItemRenderContext.renderWithoutHeldItems(() ->
+                                renderer.render(passenger, 0f, partialTick, poseStack, context.buffers(), context.packedLight())
+                        );
+                    }
+                    else {
+                        renderer.render(passenger, 0f, partialTick, poseStack, context.buffers(), context.packedLight());
+                    }
+                }
+                finally {
+                    poseStack.popPose();
+                }
             }
 
         });
