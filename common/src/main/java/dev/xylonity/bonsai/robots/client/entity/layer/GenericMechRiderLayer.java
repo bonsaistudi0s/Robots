@@ -44,7 +44,7 @@ public class GenericMechRiderLayer<T extends AbstractMechEntity> extends KnightL
                 poseStack.pushPose();
                 try {
                     poseStack.mulPose(Axis.YP.rotationDegrees(bodyYaw + 180));
-                    poseStack.translate(0, 0.7F, 0);
+                    poseStack.translate(0, mech.getRiderVerticalOffset(), 0);
 
                     if (passenger instanceof Player) {
                         HeldItemRenderContext.renderWithoutHeldItems(() ->

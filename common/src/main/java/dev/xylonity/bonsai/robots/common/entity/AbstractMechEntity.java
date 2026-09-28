@@ -74,6 +74,8 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
     private static final byte ACTIVATION_STATE_ACTIVATING = 1;
     private static final byte ACTIVATION_STATE_ACTIVATED = 2;
 
+    public static final float RIDER_VERTICAL_OFFSET = -0.7F;
+
     private final AbilityManager abilityManager = new AbilityManager(this);
 
     private int activationTicksRemaining;
@@ -353,6 +355,25 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
     @Override
     protected boolean canAddPassenger(@NotNull Entity passenger) {
         return this.isActivated() && super.canAddPassenger(passenger);
+    }
+
+    /**
+     * Rest height (in blocks) of the player seat
+     */
+    protected double getRiderSeatHeight() {
+        return this.getBbHeight();
+    }
+
+    public float getRiderVerticalOffset() {
+        return RIDER_VERTICAL_OFFSET;
+    }
+
+    @Override
+    protected void positionRider(@NotNull Entity passenger, @NotNull MoveFunction callback) {
+        if (this.hasPassenger(passenger)) {
+            callback.accept(passenger, this.getX(), this.getY() + getRiderSeatHeight() + getRiderVerticalOffset(), this.getZ());
+        }
+
     }
 
     @Override

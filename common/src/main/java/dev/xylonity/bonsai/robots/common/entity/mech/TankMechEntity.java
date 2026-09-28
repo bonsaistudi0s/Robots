@@ -165,12 +165,8 @@ public class TankMechEntity extends AbstractMechEntity {
     }
 
     @Override
-    protected void positionRider(Entity passenger, MoveFunction callback) {
-        if (this.hasPassenger(passenger)) {
-            final double y = this.getY() + this.getPassengersRidingOffset() + passenger.getMyRidingOffset();
-            callback.accept(passenger, this.getX(), y + 1, this.getZ());
-        }
-
+    protected double getRiderSeatHeight() {
+        return 57.7f / 16d;
     }
 
     @Override

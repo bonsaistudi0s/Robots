@@ -2,6 +2,7 @@ package dev.xylonity.bonsai.robots.common.entity.mech;
 
 import dev.xylonity.bonsai.robots.Robots;
 import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
+import dev.xylonity.bonsai.robots.common.entity.camera.MechCameraProfile;
 import dev.xylonity.bonsai.robots.common.entity.movement.GroundMechLocomotion;
 import dev.xylonity.bonsai.robots.common.entity.movement.MechLocomotion;
 import dev.xylonity.bonsai.robots.config.RobotsConfig;
@@ -11,6 +12,7 @@ import dev.xylonity.knightlib.api.animation.KnightLibAnimationController;
 import dev.xylonity.knightlib.api.animation.KnightLibAnimationControllerRegistrar;
 import dev.xylonity.knightlib.api.animation.KnightLibAnimationState;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -36,6 +38,10 @@ public class ShieldMechEntity extends AbstractMechEntity {
     private static final KnightLibAnim DEACTIVATED = KnightLibAnim.begin().thenLoop("animation.shield_mech.deactivated");
     private static final KnightLibAnim ACTIVATE = KnightLibAnim.begin().thenPlayAndHold("animation.shield_mech.activate");
 
+    private static final MechCameraProfile CAMERA = new MechCameraProfile(4.6D, 0.2D, 1.35D, 2.8D, 0.1D, 1.1D,
+            0.9D, 0.55F, 1.0F, 0.75F, 22.5F
+    );
+
     public ShieldMechEntity(EntityType<? extends AbstractMechEntity> type, Level level) {
         super(type, level);
     }
@@ -43,6 +49,11 @@ public class ShieldMechEntity extends AbstractMechEntity {
     @Override
     public MechLocomotion getLocomotion() {
         return GroundMechLocomotion.WALKING;
+    }
+
+    @Override
+    public MechCameraProfile getCameraProfile() {
+        return CAMERA;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -83,6 +94,16 @@ public class ShieldMechEntity extends AbstractMechEntity {
     @Override
     protected int getActivationDurationTicks() {
         return 51;
+    }
+
+    @Override
+    protected double getRiderSeatHeight() {
+        return 41.6 / 16d;
+    }
+
+    @Override
+    public float getRiderVerticalOffset() {
+        return RIDER_VERTICAL_OFFSET + 2.7f / 16f;
     }
 
     @Override
