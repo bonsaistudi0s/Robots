@@ -90,9 +90,12 @@ public class RocketProjectileEntity extends RobotProjectileEntity implements Kni
         final double y = normalized.y + this.random.nextGaussian() * 0.035D;
         final double z = normalized.z + this.random.nextGaussian() * 0.035D;
         final Vec3 drift = speed.normalize().scale(-0.025D);
+        final float rand = ((random.nextFloat() - 0.5f) * 2) * 0.1f;
+
         this.level().addParticle(ParticleTypes.POOF, x, y, z, drift.x, drift.y + 0.008D, drift.z);
 
-        if (this.random.nextFloat() < 0.75F) {
+        this.level().addParticle(RobotsParticles.FLAME.get(), x, y, z, rand, rand, rand);
+        if (random.nextFloat() < 0.5f) {
             this.level().addParticle(RobotsParticles.FLAME.get(), x, y, z, drift.x * 0.5D, drift.y * 0.5D, drift.z * 0.5D);
         }
 
@@ -320,7 +323,7 @@ public class RocketProjectileEntity extends RobotProjectileEntity implements Kni
         if (this.level() instanceof ServerLevel serverLevel) {
             shakeNearbyPlayers(serverLevel, position);
             serverLevel.sendParticles(ParticleTypes.POOF, position.x, position.y, position.z, 52, 1.0D, 1.0D, 1.0D, 0.18D);
-            serverLevel.sendParticles(RobotsParticles.FLAME.get(), position.x, position.y, position.z, 40, 0.8D, 0.8D, 0.8D, 0.13D);
+            serverLevel.sendParticles(RobotsParticles.FLAME.get(), position.x, position.y, position.z, 65, 0.8D, 0.8D, 0.8D, 0.16D);
             serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK, position.x, position.y, position.z, 32, 1.1D, 1.1D, 1.1D, 0.24D);
             serverLevel.sendParticles(ParticleTypes.SMOKE, position.x, position.y, position.z, 22, 0.75D, 0.75D, 0.75D, 0.1D);
         }
