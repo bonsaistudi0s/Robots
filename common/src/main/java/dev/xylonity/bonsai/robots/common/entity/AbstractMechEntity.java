@@ -1,12 +1,13 @@
 package dev.xylonity.bonsai.robots.common.entity;
 
-import dev.xylonity.bonsai.robots.config.RobotsConfig;
-import dev.xylonity.bonsai.robots.common.entity.ability.AbilityManager;
 import dev.xylonity.bonsai.robots.common.entity.ability.AbilityAnimationPhase;
-import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
+import dev.xylonity.bonsai.robots.common.entity.ability.AbilityEffect;
+import dev.xylonity.bonsai.robots.common.entity.ability.AbilityManager;
+import dev.xylonity.bonsai.robots.common.entity.camera.MechAim;
+import dev.xylonity.bonsai.robots.common.entity.camera.MechCameraProfile;
+import dev.xylonity.bonsai.robots.common.entity.movement.MechLocomotion;
 import dev.xylonity.bonsai.robots.registry.RobotsBlocks;
 import dev.xylonity.knightlib.api.animation.*;
-import dev.xylonity.knightlib.api.util.KnightLibMath;
 import dev.xylonity.knightlib.api.util.ResourceLocations;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -23,10 +24,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -40,14 +38,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.UUID;
 
 public abstract class AbstractMechEntity extends PathfinderMob implements KnightLibAnimatable {
 
     private final KnightLibAnimationHandler animations = KnightLibAnimationHandler.of(this);
-
-    // Identifier for the temp mod that's applied later on to the attack damage attribute (as the electric field computes a damage multiplier)
-    private static final UUID ELECTRIC_DAMAGE_MODIFIER_ID = UUID.fromString("5750f66f-c5e2-4dc1-b4fb-780237ab766f");
 
     // nbt tags
     private static final String TAG_TOGGLED_ABILITY_SLOTS = "ToggledAbilitySlots";
@@ -59,7 +53,7 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
     private static final EntityDataAccessor<Integer> DATA_ACTIVE_SLOT = SynchedEntityData.defineId(AbstractMechEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_SELECTED_SLOT = SynchedEntityData.defineId(AbstractMechEntity.class, EntityDataSerializers.INT);
 
-    // Bitmask of the special slots whose toggle ability is currently switched on (as the electric field ability is always toggled when switched on)
+    // Bitmask of the special slots whose toggle ability is currently switched on
     private static final EntityDataAccessor<Integer> DATA_TOGGLED_SLOTS = SynchedEntityData.defineId(AbstractMechEntity.class, EntityDataSerializers.INT);
 
     private static final EntityDataAccessor<Boolean> DATA_AIMING = SynchedEntityData.defineId(AbstractMechEntity.class, EntityDataSerializers.BOOLEAN);
@@ -84,6 +78,10 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
 
     private int activationTicksRemaining;
 
+    // Crosshair ray offset reported by the pilot camera (see MechAnim)
+    private float aimOffsetRight;
+    private float aimOffsetUp;
+
     // Client-only helpers to handle the torso rotation
     public float clientLegsYaw;
     public float clientTorsoYaw;
@@ -93,7 +91,6 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
 
     // Client-only helpers to handle whether the legs should face the movement direction
     public boolean clientLegsReversed;
-    public float clientAimCameraProgress;
 
     // Client-only helpers to handle leg IKs
     public float clientLeftLegGroundDelta;
@@ -148,7 +145,6 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
         final int slots = this.entityData.get(DATA_TOGGLED_SLOTS);
         this.entityData.set(DATA_TOGGLED_SLOTS, active ? slots | 1 << slot : slots & ~(1 << slot));
 
-        updateElectricAttackDamageModifier();
     }
 
     /**
@@ -166,7 +162,11 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
     }
 
     public boolean isElectricMode() {
-        return this.isActivated() && isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD);
+        return abilityManager.hasActiveEffect(AbilityEffect.ELECTRIC_FIELD);
+    }
+
+    public boolean hasShieldSphere() {
+        return abilityManager.hasActiveEffect(AbilityEffect.SHIELD_SPHERE);
     }
 
     public boolean isAiming() {
@@ -206,6 +206,23 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
 
     public void clearAbilityTargets() {
         this.entityData.set(DATA_ABILITY_TARGETS, new CompoundTag());
+    }
+
+    public float getAimOffsetRight() {
+        return aimOffsetRight;
+    }
+
+    public float getAimOffsetUp() {
+        return aimOffsetUp;
+    }
+
+    public void setAimOffset(float right, float up) {
+        this.aimOffsetRight = MechAim.clampOffset(right);
+        this.aimOffsetUp = MechAim.clampOffset(up);
+    }
+
+    public MechCameraProfile getCameraProfile() {
+        return MechCameraProfile.forSize(this.getBbWidth(), this.getBbHeight());
     }
 
     public float getEnergy() {
@@ -265,7 +282,6 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
                 this.setSprinting(false);
             }
 
-            updateElectricAttackDamageModifier();
         }
 
     }
@@ -337,6 +353,12 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
     @Override
     protected boolean canAddPassenger(@NotNull Entity passenger) {
         return this.isActivated() && super.canAddPassenger(passenger);
+    }
+
+    @Override
+    protected void removePassenger(@NotNull Entity passenger) {
+        super.removePassenger(passenger);
+        setAimOffset(0, 0);
     }
 
     private void startActivation(Player activator) {
@@ -415,41 +437,31 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
         this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
     }
 
-    // Caps the speed if the legs aren't looking at the look direction (taking into account the legs might be going backwards)
+    public MechLocomotion getLocomotion() {
+        return MechLocomotion.STATIONARY;
+    }
+
+    @Override
+    public boolean canSprint() {
+        return this.isActivated() && this.isAlive() && getLocomotion().canSprint(this);
+    }
+
     @Override
     protected @NotNull Vec3 getRiddenInput(Player player, @NotNull Vec3 travelVector) {
-        Vec3 input = new Vec3(player.xxa, 0.0D, player.zza);
-        if (input.horizontalDistanceSqr() < 1.0E-7D) {
-            return input;
-        }
-
-        if (this.clientYawInitialized) {
-            final Vec3 worldInput = input.yRot((float) Math.toRadians(-player.getYRot()));
-            final float movementYaw = KnightLibMath.yawAngleOf(worldInput);
-            if (Math.abs(KnightLibMath.angleDelta(this.clientLegsYaw, movementYaw)) > 90.0F) {
-                input = input.scale(0.5D);
-            }
-
-        }
-        else if (player.zza < 0.0F) {
-            input = input.scale(0.5D);
-        }
-
-        return input;
+        return this.isActivated() ? getLocomotion().riddenInput(this, player, travelVector) : Vec3.ZERO;
     }
 
     @Override
     protected float getRiddenSpeed(@NotNull Player player) {
-        final double sprintMultiplier = this.canSprint() && this.isSprinting() ? Math.max(1.0D, this.getSprintSpeedMultiplier()) : 1.0D;
-        return (float) (this.getAttributeValue(Attributes.MOVEMENT_SPEED) * sprintMultiplier);
+        return this.isActivated() ? getLocomotion().riddenSpeed(this, player) : 0.0F;
     }
 
-    /**
-     * Per-mech sprint multiplier. Sprint (capable) implementations should override this together with {@link #canSprint()} so each mech can expose its
-     * own configured movement speed.
-     */
-    protected double getSprintSpeedMultiplier() {
-        return 1.0D;
+    public float getMovementSurfaceFriction() {
+        return this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction();
+    }
+
+    protected double movementAnimationSpeed(KnightLibAnimationState state) {
+        return this.isActivated() && this.isAlive() ? getLocomotion().animationSpeed(this, state) : 1;
     }
 
     @Override
@@ -493,59 +505,14 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
 
         this.setDyeColor(DyeColor.byName(tag.getString(TAG_DYE_COLOR), DyeColor.GREEN));
 
-        updateElectricAttackDamageModifier();
-    }
-
-    private void updateElectricAttackDamageModifier() {
-        if (this.level().isClientSide) {
-            return;
-        }
-
-        final AttributeInstance attackDamage = this.getAttribute(Attributes.ATTACK_DAMAGE);
-        if (attackDamage == null) {
-            return;
-        }
-
-        final AttributeModifier current = attackDamage.getModifier(ELECTRIC_DAMAGE_MODIFIER_ID);
-        final double amount = Math.max(0.0D, RobotsConfig.ELECTRIC_MECH_DAMAGE_MULTIPLIER) - 1.0D;
-        if (!this.isElectricMode() || amount == 0.0D) {
-            if (current != null) {
-                attackDamage.removeModifier(ELECTRIC_DAMAGE_MODIFIER_ID);
-            }
-
-            return;
-        }
-
-        if (current == null || Double.compare(current.getAmount(), amount) != 0) {
-            if (current != null) {
-                attackDamage.removeModifier(ELECTRIC_DAMAGE_MODIFIER_ID);
-            }
-
-            attackDamage.addTransientModifier(new AttributeModifier(
-                    ELECTRIC_DAMAGE_MODIFIER_ID,
-                    "Electric field damage",
-                    amount,
-                    AttributeModifier.Operation.MULTIPLY_TOTAL
-            ));
-
-        }
-
     }
 
     @Override
     public boolean hurt(@NotNull DamageSource source, float amount) {
-        final boolean electric = this.isElectricMode();
-        final float adjustedAmount = electric ? amount * (1.0F - (float) Mth.clamp(RobotsConfig.ELECTRIC_MECH_DAMAGE_REDUCTION, 0.0D, 1.0D)) : amount;
+        final float adjustedAmount = abilityManager.modifyIncomingDamage(source, amount);
         final boolean damaged = super.hurt(source, adjustedAmount);
-
-        // Applies additional damage to the input damage (if it's melee damage, thus an actual entity) in case the electric field ability is active
-        final Entity attacker = source.getEntity();
-        if (damaged && electric && attacker != null && attacker != this && source.getDirectEntity() == attacker && !source.is(DamageTypes.THORNS) && !attacker.isPassengerOfSameVehicle(this)) {
-            final float retaliation = (float) Math.max(0.0D, RobotsConfig.ELECTRIC_MELEE_RETALIATION_DAMAGE);
-            if (retaliation > 0.0F) {
-                attacker.hurt(this.damageSources().thorns(this), retaliation);
-            }
-
+        if (damaged && !this.level().isClientSide) {
+            abilityManager.onDamaged(source, adjustedAmount);
         }
 
         return damaged;
@@ -683,16 +650,6 @@ public abstract class AbstractMechEntity extends PathfinderMob implements Knight
      */
     protected void onActivationFinished() {
         ;;
-    }
-
-    // Blocks per walk cycle (used to scale the walking animation)
-    protected float getWalkBlocksPerCycle() {
-        return 5.0F;
-    }
-
-    // Walk cycle duration
-    protected float getWalkCycleSeconds() {
-        return 1F;
     }
 
     @Override
