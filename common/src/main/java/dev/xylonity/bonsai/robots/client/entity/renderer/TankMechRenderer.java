@@ -2,7 +2,7 @@ package dev.xylonity.bonsai.robots.client.entity.renderer;
 
 import dev.xylonity.bonsai.robots.Robots;
 import dev.xylonity.bonsai.robots.client.entity.layer.GenericMechElectricFieldLayer;
-import dev.xylonity.bonsai.robots.client.entity.layer.TankMechRiderLayer;
+import dev.xylonity.bonsai.robots.client.entity.layer.GenericMechRiderLayer;
 import dev.xylonity.bonsai.robots.common.entity.mech.TankMechEntity;
 import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
 import dev.xylonity.knightlib.client.animation.KnightLibAnimationSource;
@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 
 public class TankMechRenderer extends AbstractMechRenderer<TankMechEntity> {
 
+    public static final ResourceLocation TEXTURE_LOCATION = Robots.of("textures/entity/tank_mech/tank_mech.png");
     private static final ResourceLocation ELECTRIC_FIELD = Robots.of("textures/entity/tank_mech/tank_mech_glow_electric.png");
 
     // Upper and lower leg bones are siblings, so both are repositioned independently
@@ -24,8 +25,8 @@ public class TankMechRenderer extends AbstractMechRenderer<TankMechEntity> {
 
     public TankMechRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, 1.5f);
-        addRenderLayer(new TankMechRiderLayer());
-        addEmissiveLayer(tankMechEntity -> Robots.of("textures/entity/tank_mech/tank_mech_glow.png"));
+        addRenderLayer(new GenericMechRiderLayer<>());
+        addEmissiveLayer(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) ? null : Robots.of("textures/entity/tank_mech/tank_mech_glow.png"));
         addRenderLayer(new GenericMechElectricFieldLayer<>(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) ? ELECTRIC_FIELD : null));
     }
 
@@ -84,7 +85,7 @@ public class TankMechRenderer extends AbstractMechRenderer<TankMechEntity> {
 
     @Override
     public ResourceLocation getTextureLocation(TankMechEntity tankMechEntity) {
-        return Robots.of("textures/entity/tank_mech/tank_mech.png");
+        return TEXTURE_LOCATION;
     }
 
     @Override

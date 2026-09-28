@@ -2,6 +2,7 @@ package dev.xylonity.bonsai.robots.client.entity.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.xylonity.bonsai.robots.client.entity.layer.GenericMechPaletteLayer;
+import dev.xylonity.bonsai.robots.client.entity.layer.MechForceFieldLayer;
 import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
 import dev.xylonity.knightlib.api.util.KnightLibMath;
 import dev.xylonity.knightlib.client.animation.model.KnightLibModel;
@@ -50,6 +51,7 @@ public abstract class AbstractMechRenderer<T extends AbstractMechEntity> extends
     public AbstractMechRenderer(EntityRendererProvider.Context context, float shadowRadius) {
         super(context, shadowRadius);
         addRenderLayer(new GenericMechPaletteLayer<>(this::getPaletteSprite));
+        addRenderLayer(new MechForceFieldLayer<>(this::getTextureLocation));
     }
 
     /**
@@ -102,7 +104,14 @@ public abstract class AbstractMechRenderer<T extends AbstractMechEntity> extends
      */
     @Override
     protected void beforeRender(T entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int packedLight) {
+        if (!entity.getLocomotion().usesLegs()) {
+            entity.clientYawInitialized = false;
+            entity.clientLegIkInitialized = false;
+            return;
+        }
+
         updatedPlayerControlledBoneYaw(entity, partialTick);
+
         if (supportsLegIk()) {
             updateLegIkState(entity, partialTick);
         }
@@ -126,11 +135,22 @@ public abstract class AbstractMechRenderer<T extends AbstractMechEntity> extends
      */
     @Override
     protected void setupPose(T entity, KnightLibModel model, float partialTick) {
-        if (entity.clientYawInitialized && model.hasBone(TORSO_BONE)) {
-            model.applyRotation(TORSO_BONE, 0f, KnightLibMath.angleDelta(entity.clientLegsYaw, entity.clientTorsoYaw), 0f);
+        final String torsoYawBone = getTorsoYawBone();
+        if (entity.clientYawInitialized && model.hasBone(torsoYawBone)) {
+            model.applyRotation(torsoYawBone, 0f, KnightLibMath.angleDelta(entity.clientLegsYaw, entity.clientTorsoYaw), 0f);
         }
 
-        applyLegIk(entity, model);
+        if (entity.getLocomotion().usesLegs() && supportsLegIk()) {
+            applyLegIk(entity, model);
+        }
+
+    }
+
+    /**
+     * Bone that turns the torso towards the camera
+     */
+    protected String getTorsoYawBone() {
+        return TORSO_BONE;
     }
 
     /**

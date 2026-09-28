@@ -19,9 +19,9 @@ import net.minecraft.world.entity.player.Player;
 
 public class ShieldMechRenderer extends AbstractMechRenderer<ShieldMechEntity> {
 
-    public static final ResourceLocation TEXTURE_LOCATION = new ResourceLocation(Robots.MOD_ID, "textures/entity/shield_mech/shield_mech.png");
-    public static final ResourceLocation GLOW_TEXTURE = new ResourceLocation(Robots.MOD_ID, "textures/entity/shield_mech/shield_mech_glow.png");
-    public static final ResourceLocation ELECTRIC_FIELD = new ResourceLocation(Robots.MOD_ID, "textures/entity/shield_mech/shield_mech_glow_electric.png");
+    public static final ResourceLocation TEXTURE_LOCATION = Robots.of("textures/entity/shield_mech/shield_mech.png");
+    public static final ResourceLocation GLOW_TEXTURE = Robots.of("textures/entity/shield_mech/shield_mech_glow.png");
+    public static final ResourceLocation ELECTRIC_FIELD = Robots.of("textures/entity/shield_mech/shield_mech_glow_electric.png");
 
     private static final float SPHERE_RADIUS = 3.25F;
 
@@ -33,25 +33,25 @@ public class ShieldMechRenderer extends AbstractMechRenderer<ShieldMechEntity> {
         addRenderLayer(new GenericMechElectricFieldLayer<>(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) ? ELECTRIC_FIELD : null));
     }
 
-    //@Override
-    //protected void afterRender(ShieldMechEntity entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int packedLight) {
-    //    super.afterRender(entity, entityYaw, partialTick, poseStack, buffers, packedLight);
-    //    if (!entity.hasShieldSphere() || entity.isInvisible()) {
-    //        return;
-    //    }
-//
-    //    final ResourceLocation texture = MechForceFieldTextures.resolveSphere(entity.level().getGameTime());
-    //    if (texture == null) {
-    //        return;
-    //    }
-//
-    //    poseStack.pushPose();
-//
-    //    poseStack.translate(0.0F, 1.5f, 0.0F);
-    //    ForceFieldSphere.render(poseStack, buffers, texture, SPHERE_RADIUS);
-//
-    //    poseStack.popPose();
-    //}
+    @Override
+    protected void afterRender(ShieldMechEntity entity, float entityYaw, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int packedLight) {
+        super.afterRender(entity, entityYaw, partialTick, poseStack, buffers, packedLight);
+        if (!entity.hasShieldSphere() || entity.isInvisible()) {
+            return;
+        }
+
+        final ResourceLocation texture = MechForceFieldTextures.resolveSphere(entity.level().getGameTime());
+        if (texture == null) {
+            return;
+        }
+
+        poseStack.pushPose();
+
+        poseStack.translate(0, 1.5f, 0);
+        ForceFieldSphere.render(poseStack, buffers, texture, SPHERE_RADIUS);
+
+        poseStack.popPose();
+    }
 
     @Override
     protected double getCullingInflation(ShieldMechEntity entity) {
@@ -61,6 +61,11 @@ public class ShieldMechRenderer extends AbstractMechRenderer<ShieldMechEntity> {
     @Override
     protected boolean supportsLegIk() {
         return true;
+    }
+
+    @Override
+    protected String getTorsoYawBone() {
+        return "body";
     }
 
     @Override
@@ -75,7 +80,7 @@ public class ShieldMechRenderer extends AbstractMechRenderer<ShieldMechEntity> {
                 entity.clientPitchInitialized = true;
             }
             if (entity.clientPitchInitialized) {
-                model.applyRotation(TORSO_BONE, entity.clientTorsoPitch, 0.0F, 0.0F);
+                model.applyRotation(TORSO_BONE, entity.clientTorsoPitch, 0, 0);
             }
 
         }
