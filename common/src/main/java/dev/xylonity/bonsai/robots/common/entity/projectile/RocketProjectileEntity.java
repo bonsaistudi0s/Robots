@@ -3,11 +3,16 @@ package dev.xylonity.bonsai.robots.common.entity.projectile;
 import dev.xylonity.bonsai.robots.config.RobotsConfig;
 import dev.xylonity.bonsai.robots.registry.RobotsDamageTypes;
 import dev.xylonity.bonsai.robots.registry.RobotsEntities;
+import dev.xylonity.bonsai.robots.registry.RobotsParticles;
+import dev.xylonity.knightlib.KnightLib;
 import dev.xylonity.knightlib.api.animation.KnightLibAnimatable;
 import dev.xylonity.knightlib.api.animation.KnightLibAnimationHandler;
+import dev.xylonity.knightlib.api.camera.shake.ShakeSettings;
+import dev.xylonity.knightlib.network.packets.CameraShakeS2C;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -87,8 +92,8 @@ public class RocketProjectileEntity extends RobotProjectileEntity implements Kni
         final Vec3 drift = speed.normalize().scale(-0.025D);
         this.level().addParticle(ParticleTypes.POOF, x, y, z, drift.x, drift.y + 0.008D, drift.z);
 
-        if (this.random.nextFloat() < 0.4F) {
-            this.level().addParticle(ParticleTypes.FLAME, x, y, z, drift.x * 0.5D, drift.y * 0.5D, drift.z * 0.5D);
+        if (this.random.nextFloat() < 0.75F) {
+            this.level().addParticle(RobotsParticles.FLAME.get(), x, y, z, drift.x * 0.5D, drift.y * 0.5D, drift.z * 0.5D);
         }
 
     }
@@ -313,8 +318,9 @@ public class RocketProjectileEntity extends RobotProjectileEntity implements Kni
         this.setPos(position);
         damageNearbyEntities(position);
         if (this.level() instanceof ServerLevel serverLevel) {
+            shakeNearbyPlayers(serverLevel, position);
             serverLevel.sendParticles(ParticleTypes.POOF, position.x, position.y, position.z, 52, 1.0D, 1.0D, 1.0D, 0.18D);
-            serverLevel.sendParticles(ParticleTypes.FLAME, position.x, position.y, position.z, 24, 0.8D, 0.8D, 0.8D, 0.13D);
+            serverLevel.sendParticles(RobotsParticles.FLAME.get(), position.x, position.y, position.z, 40, 0.8D, 0.8D, 0.8D, 0.13D);
             serverLevel.sendParticles(ParticleTypes.ELECTRIC_SPARK, position.x, position.y, position.z, 32, 1.1D, 1.1D, 1.1D, 0.24D);
             serverLevel.sendParticles(ParticleTypes.SMOKE, position.x, position.y, position.z, 22, 0.75D, 0.75D, 0.75D, 0.1D);
         }
@@ -322,6 +328,28 @@ public class RocketProjectileEntity extends RobotProjectileEntity implements Kni
         this.level().playSound(null, position.x, position.y, position.z, SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.2F, 0.82F + this.random.nextFloat() * 0.28F);
 
         this.discard();
+    }
+
+    private void shakeNearbyPlayers(ServerLevel level, Vec3 position) {
+        for (final ServerPlayer player : level.players()) {
+            final double distance = player.getEyePosition().distanceTo(position);
+            if (distance >= 16) {
+                continue;
+            }
+
+            final float falloff = (float) (1.0D - distance / 16f);
+            final float amplitude = 0.3f * falloff * falloff;
+            final ShakeSettings shake = ShakeSettings.builder()
+                    .durationTicks(16)
+                    .fadeOutTicks(16)
+                    .frequency(18.0F)
+                    .amplitude(amplitude, amplitude, amplitude * 0.5F)
+                    .seed(this.random.nextLong())
+                    .build();
+
+            KnightLib.NET.sendTo(player, CameraShakeS2C.TYPE.base(), new CameraShakeS2C(shake, false));
+        }
+
     }
 
     private void damageNearbyEntities(Vec3 position) {

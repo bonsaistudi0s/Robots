@@ -17,5 +17,6 @@ public final class RobotsParticles {
     public static final ResourceEntry<SimpleParticleType> SMALL_LASER_TRAIL = PARTICLES.register("small_laser_trail", KnightLib.PLATFORM.createParticle(true));
     public static final ResourceEntry<SimpleParticleType> ELECTRIC_LASER_TRAIL = PARTICLES.register("electric_laser_trail", KnightLib.PLATFORM.createParticle(true));
     public static final ResourceEntry<SimpleParticleType> ELECTRIC_SMALL_LASER_TRAIL = PARTICLES.register("electric_small_laser_trail", KnightLib.PLATFORM.createParticle(true));
+    public static final ResourceEntry<SimpleParticleType> FLAME = PARTICLES.register("flame", KnightLib.PLATFORM.createParticle(false));
 
 }
