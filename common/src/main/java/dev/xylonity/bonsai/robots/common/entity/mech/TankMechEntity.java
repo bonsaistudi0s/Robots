@@ -2,6 +2,9 @@ package dev.xylonity.bonsai.robots.common.entity.mech;
 
 import dev.xylonity.bonsai.robots.Robots;
 import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
+import dev.xylonity.bonsai.robots.common.entity.camera.MechCameraProfile;
+import dev.xylonity.bonsai.robots.common.entity.movement.GroundMechLocomotion;
+import dev.xylonity.bonsai.robots.common.entity.movement.MechLocomotion;
 import dev.xylonity.bonsai.robots.common.entity.ability.AbilityAnimationPhase;
 import dev.xylonity.bonsai.robots.config.RobotsConfig;
 import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
@@ -49,8 +52,14 @@ public class TankMechEntity extends AbstractMechEntity {
 
     private static final ResourceLocation MODEL = Robots.of("geo/tank_mech.geo.json");
     private static final ResourceLocation ANIMATIONS = Robots.of("animations/tank_mech.animation.json");
+
     private static final List<String> ROCKET_ANCHORS = List.of(
             "rocket_spawn_1", "rocket_spawn_2", "rocket_spawn_3", "rocket_spawn_4"
+    );
+
+    private static final MechLocomotion LOCOMOTION = new GroundMechLocomotion(5.0D, 1.0D, () -> RobotsConfig.TANK_MECH_SPRINT_SPEED_MULTIPLIER, () -> RobotsConfig.TANK_MECH_BACKWARD_SPEED_MULTIPLIER);
+    private static final MechCameraProfile CAMERA = new MechCameraProfile(4.6D, 0.2D, 1.35D, 2.8D, 0.1D, 1.1D,
+            0.9D, 0.55F, 1.0F, 0.75F, 22.5F
     );
 
     private final BoneHitboxRig anchorRig = BoneHitboxRigs.geo(MODEL, ANIMATIONS);
@@ -67,13 +76,13 @@ public class TankMechEntity extends AbstractMechEntity {
     }
 
     @Override
-    public boolean canSprint() {
-        return true;
+    public MechLocomotion getLocomotion() {
+        return LOCOMOTION;
     }
 
     @Override
-    protected double getSprintSpeedMultiplier() {
-        return RobotsConfig.TANK_MECH_SPRINT_SPEED_MULTIPLIER;
+    public MechCameraProfile getCameraProfile() {
+        return CAMERA;
     }
 
     @Override
@@ -194,32 +203,6 @@ public class TankMechEntity extends AbstractMechEntity {
 
     }
 
-    private double movementAnimationSpeed(KnightLibAnimationState state) {
-        if (!state.isMoving()) {
-            return 1.0D;
-        }
-        if (!this.isSprinting()) {
-            final double walkSpeed = state.blocksPerSecond() * getWalkCycleSeconds() / getWalkBlocksPerCycle();
-            return Math.min(3.0D, Math.max(0.25D, walkSpeed));
-        }
-
-        final float blockFriction = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction();
-        final double movementSpeed = this.getAttributeValue(Attributes.MOVEMENT_SPEED) * Math.max(1.0D, this.getSprintSpeedMultiplier());
-        final double acceleration;
-        final double drag;
-        if (this.onGround()) {
-            acceleration = movementSpeed * (0.21600002D / (blockFriction * blockFriction * blockFriction));
-            drag = blockFriction * 0.91D;
-        }
-        else {
-            acceleration = movementSpeed * 0.1D;
-            drag = 0.91D;
-        }
-
-        final double sprintSpeed = acceleration / Math.max(1.0E-6D, 1.0D - drag);
-        return Math.min(1.0D, state.blocksPerTick() / sprintSpeed);
-    }
-
     private KnightLibAnim movementPredicate(KnightLibAnimationState state) {
         if (this.isDeadOrDying()) {
             return DEATH;
@@ -257,6 +240,9 @@ public class TankMechEntity extends AbstractMechEntity {
         };
         if (sound != null) {
             this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), 1.0F, 1.0F, false);
+        }
+        if (sound == RobotsSounds.GENERIC_STEP.get()) {
+            Robots.PROXY.onMechFootstep(this);
         }
 
     }
