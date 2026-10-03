@@ -5190,10 +5190,12 @@
 						"vector": [5, 0, 0]
 					}
 				},
-				"body_2": {
+				"body_player_control": {
 					"rotation": {
 						"vector": [22.5, 0, 0]
-					},
+					}
+				},
+				"body_2": {
 					"position": {
 						"vector": [0, -1, -2]
 					}
@@ -5310,7 +5312,7 @@
 						}
 					}
 				},
-				"body_2": {
+				"body_player_control": {
 					"rotation": {
 						"0.0": {
 							"vector": [0, 0, 0],
@@ -5319,7 +5321,9 @@
 						"0.5": {
 							"vector": [22.5, 0, 0]
 						}
-					},
+					}
+				},
+				"body_2": {
 					"position": {
 						"0.0": {
 							"vector": [0, 0, 0]
@@ -5550,7 +5554,7 @@
 						}
 					}
 				},
-				"body_2": {
+				"body_player_control": {
 					"rotation": {
 						"0.0": {
 							"vector": [22.5, 0, 0]
@@ -5559,7 +5563,9 @@
 							"vector": [0, 0, 0],
 							"easing": "linear"
 						}
-					},
+					}
+				},
+				"body_2": {
 					"position": {
 						"0.0": {
 							"vector": [0, -1, -2]
