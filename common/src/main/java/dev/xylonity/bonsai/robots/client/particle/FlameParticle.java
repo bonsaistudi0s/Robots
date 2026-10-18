@@ -19,6 +19,8 @@ public final class FlameParticle extends RisingParticle {
         super(level, x, y, z, xd, yd, zd);
         this.sprites = sprites;
         this.setSpriteFromAge(sprites);
+        // Consistent 8x8 size with the 16x16 grid
+        this.quadSize = 8f / 16f / 2f;
     }
 
     @Override
@@ -34,12 +36,6 @@ public final class FlameParticle extends RisingParticle {
     public void move(double x, double y, double z) {
         this.setBoundingBox(this.getBoundingBox().move(x, y, z));
         this.setLocationFromBoundingbox();
-    }
-
-    @Override
-    public float getQuadSize(float partialTick) {
-        final float life = (this.age + partialTick) / this.lifetime;
-        return this.quadSize * (1.0F - life * life * 0.5F);
     }
 
     @Override
