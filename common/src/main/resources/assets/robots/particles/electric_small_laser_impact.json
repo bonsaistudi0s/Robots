@@ -1,0 +1,7 @@
+{
+  "textures": [
+    "robots:laser_impact_glow",
+    "robots:laser_impact_streak",
+    "robots:laser_impact_band"
+  ]
+}

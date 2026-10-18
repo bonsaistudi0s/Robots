@@ -13,9 +13,28 @@
 			"bones": [
 				{
 					"name": "main",
-					"pivot": [0, 1, -5.5],
+					"pivot": [0, 1, -0.5],
 					"cubes": [
-						{"origin": [-1, 0, -8], "size": [2, 2, 5], "uv": [0, 0]}
+						{"origin": [-1, 0, -3], "size": [2, 2, 5], "uv": [0, 0]}
+					]
+				},
+				{
+					"name": "cube_outline",
+					"parent": "main",
+					"pivot": [0, 0, -1],
+					"cubes": [
+						{
+							"origin": [1.5, 2.5, 2.5],
+							"size": [-3, -3, -6],
+							"uv": {
+								"north": {"uv": [9, 13], "uv_size": [-3, -3]},
+								"east": {"uv": [15, 13], "uv_size": [-6, -3]},
+								"south": {"uv": [3, 13], "uv_size": [-3, -3]},
+								"west": {"uv": [6, 13], "uv_size": [-6, -3]},
+								"up": {"uv": [9, 16], "uv_size": [-3, -6]},
+								"down": {"uv": [6, 10], "uv_size": [-3, 6]}
+							}
+						}
 					]
 				}
 			]

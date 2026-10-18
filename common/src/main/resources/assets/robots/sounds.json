@@ -151,6 +151,11 @@
       "robots:generic/generic_activate_3"
     ]
   },
+  "generic_activate_3": {
+    "sounds": [
+      "robots:generic/generic_activate_3"
+    ]
+  },
   "generic_hit": {
     "sounds": [
       "robots:generic/generic_hit_1",
@@ -228,6 +233,21 @@
       "robots:generic/projectiles/zap_4"
     ]
   },
+  "flame": {
+    "sounds": [
+      "robots:generic/projectiles/flame"
+    ]
+  },
+  "sleep_start": {
+    "sounds": [
+      "robots:generic/sleep_start"
+    ]
+  },
+  "sleep_end": {
+    "sounds": [
+      "robots:generic/sleep_end"
+    ]
+  },
   "mining_mech_claw_off": {
     "sounds": [
       "robots:mining_mech/mining_mech_claw_off"
@@ -298,9 +318,19 @@
       "robots:rolling_mech/rolling_mech_walk"
     ]
   },
-  "shield_mech_walk": {
+  "shield_mech_idle": {
     "sounds": [
-      "robots:shield_mech/shield_mech_walk"
+      "robots:shield_mech/shield_mech_idle"
+    ]
+  },
+  "shield_mech_walk_1": {
+    "sounds": [
+      "robots:shield_mech/shield_mech_walk_1"
+    ]
+  },
+  "shield_mech_walk_2": {
+    "sounds": [
+      "robots:shield_mech/shield_mech_walk_2"
     ]
   },
   "support_bot_activate": {

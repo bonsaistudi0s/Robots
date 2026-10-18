@@ -657,6 +657,11 @@
 						}
 					}
 				}
+			},
+			"sound_effects": {
+				"0.0": {
+					"effect": "idle"
+				}
 			}
 		},
 		"animation.shield_mech.deactivated": {
@@ -2224,6 +2229,14 @@
 							"vector": [0, 0, 0]
 						}
 					}
+				}
+			},
+			"sound_effects": {
+				"0.0": {
+					"effect": "walk_1"
+				},
+				"0.75": {
+					"effect": "walk_2"
 				}
 			}
 		},
