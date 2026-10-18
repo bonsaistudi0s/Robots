@@ -13,5 +13,6 @@ public final class RobotsItems {
 
     public static final ResourceEntry<Item> TANK_MECH_SPAWN_EGG = ITEMS.registerSpawnEgg("tank_mech_spawn_egg", RobotsEntities.TANK_MECH, 0x292D2E, 0x77A63D, new Item.Properties());
     public static final ResourceEntry<Item> TALL_MECH_SPAWN_EGG = ITEMS.registerSpawnEgg("tall_mech_spawn_egg", RobotsEntities.TALL_MECH, 0x53633D, 0x272D2E, new Item.Properties());
+    public static final ResourceEntry<Item> SHIELD_MECH_SPAWN_EGG = ITEMS.registerSpawnEgg("shield_mech_spawn_egg", RobotsEntities.SHIELD_MECH, 0x412D2E, 0x60A63D, new Item.Properties());
 
 }

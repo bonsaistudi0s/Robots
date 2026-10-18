@@ -263,38 +263,6 @@
 					"pivot": [0, 41, 5.5]
 				},
 				{
-					"name": "shield_ability",
-					"parent": "body",
-					"pivot": [6, 12, 2.5]
-				},
-				{
-					"name": "shield_ability_2",
-					"parent": "shield_ability",
-					"pivot": [-2, 28, 2.5],
-					"rotation": [0, -12.5, 22.5],
-					"cubes": [
-						{"origin": [-28, 14, -23.5], "size": [52, 27, 52], "uv": [0, 0]}
-					]
-				},
-				{
-					"name": "shield_ability_3",
-					"parent": "shield_ability",
-					"pivot": [2, 28, 2.5],
-					"rotation": [0, 12.5, -22.5],
-					"cubes": [
-						{"origin": [-24, 14, -23.5], "size": [52, 27, 52], "uv": [0, 0], "mirror": true}
-					]
-				},
-				{
-					"name": "shield_ability_4",
-					"parent": "shield_ability",
-					"pivot": [-1, 28, 2.5],
-					"rotation": [0, 0, -90],
-					"cubes": [
-						{"origin": [-27, 14, -23.5], "size": [52, 27, 52], "uv": [0, 0], "mirror": true}
-					]
-				},
-				{
 					"name": "left_leg",
 					"parent": "main",
 					"pivot": [9, 13, 2],

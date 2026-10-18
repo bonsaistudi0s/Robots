@@ -25,6 +25,7 @@ public final class RobotsCreativeTabs {
                         output.accept(RobotsBlocks.BATTERY_CELL_CHARGED.get());
                         output.accept(RobotsItems.TANK_MECH_SPAWN_EGG.get());
                         output.accept(RobotsItems.TALL_MECH_SPAWN_EGG.get());
+                        output.accept(RobotsItems.SHIELD_MECH_SPAWN_EGG.get());
                     })
                     .build()
     );
