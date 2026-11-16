@@ -13,6 +13,7 @@ import net.minecraft.util.Mth;
 
 public class TallMechRenderer extends AbstractMechRenderer<TallMechEntity> {
 
+    public static final ResourceLocation TEXTURE_LOCATION = Robots.of("textures/entity/tall_mech/tall_mech.png");
     private static final ResourceLocation ELECTRIC_FIELD = Robots.of("textures/entity/tall_mech/tall_mech_glow_electric.png");
 
     // The lower leg is a child of the upper leg, so moving the knee independently would apply the hip rotation twice
@@ -82,7 +83,12 @@ public class TallMechRenderer extends AbstractMechRenderer<TallMechEntity> {
 
     @Override
     public ResourceLocation getTextureLocation(TallMechEntity tankMechEntity) {
-        return Robots.of("textures/entity/tall_mech/tall_mech_green.png");
+        return TEXTURE_LOCATION;
+    }
+
+    @Override
+    protected ResourceLocation getPaletteSprite(TallMechEntity entity) {
+        return Robots.of("entity/tall_mech/tall_mech");
     }
 
     @Override

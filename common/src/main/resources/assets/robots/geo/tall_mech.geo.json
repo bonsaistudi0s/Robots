@@ -33,20 +33,19 @@
 				{
 					"name": "left_rocket",
 					"parent": "left_leg",
-					"pivot": [7, 51, -9.5],
+					"pivot": [16, 44, -9.5],
 					"cubes": [
-						{"origin": [7, 46, -11], "size": [3, 5, 3], "uv": [25, 189]},
-						{"origin": [9, 43, -12], "size": [5, 13, 5], "uv": [0, 183]},
-						{"origin": [8, 50.9, -13], "size": [7, 3, 7], "inflate": -0.1, "uv": [0, 207]}
+						{"origin": [16, 39, -11], "size": [3, 5, 3], "uv": [25, 189]},
+						{"origin": [18, 36, -12], "size": [5, 13, 5], "uv": [0, 183]}
 					]
 				},
 				{
 					"name": "left_rocket_2",
 					"parent": "left_rocket",
-					"pivot": [11.5, 50.5, -9.5],
+					"pivot": [20.5, 43.5, -9.5],
 					"cubes": [
-						{"origin": [10, 44, -11], "size": [3, 7, 3], "uv": [0, 218]},
-						{"origin": [10, 44, -11], "size": [3, 7, 3], "inflate": 0.1, "uv": [13, 218]}
+						{"origin": [19, 37, -11], "size": [3, 7, 3], "uv": [0, 218]},
+						{"origin": [19, 37, -11], "size": [3, 7, 3], "inflate": 0.1, "uv": [13, 218]}
 					]
 				},
 				{
@@ -99,20 +98,19 @@
 				{
 					"name": "right_rocket",
 					"parent": "right_leg",
-					"pivot": [-7, 51, -9.5],
+					"pivot": [-16, 44, -9.5],
 					"cubes": [
-						{"origin": [-10, 46, -11], "size": [3, 5, 3], "uv": [25, 189], "mirror": true},
-						{"origin": [-14, 43, -12], "size": [5, 13, 5], "uv": [0, 183], "mirror": true},
-						{"origin": [-15, 50.9, -13], "size": [7, 3, 7], "inflate": -0.1, "uv": [0, 207], "mirror": true}
+						{"origin": [-19, 39, -11], "size": [3, 5, 3], "uv": [25, 189], "mirror": true},
+						{"origin": [-23, 36, -12], "size": [5, 13, 5], "uv": [0, 183], "mirror": true}
 					]
 				},
 				{
 					"name": "right_rocket_2",
 					"parent": "right_rocket",
-					"pivot": [-11.5, 50.5, -9.5],
+					"pivot": [-20.5, 43.5, -9.5],
 					"cubes": [
-						{"origin": [-13, 44, -11], "size": [3, 7, 3], "uv": [0, 218], "mirror": true},
-						{"origin": [-13, 44, -11], "size": [3, 7, 3], "inflate": 0.1, "uv": [13, 218], "mirror": true}
+						{"origin": [-22, 37, -11], "size": [3, 7, 3], "uv": [0, 218], "mirror": true},
+						{"origin": [-22, 37, -11], "size": [3, 7, 3], "inflate": 0.1, "uv": [13, 218], "mirror": true}
 					]
 				},
 				{

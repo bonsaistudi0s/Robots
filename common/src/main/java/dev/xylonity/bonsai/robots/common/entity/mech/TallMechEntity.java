@@ -26,19 +26,23 @@ import java.util.*;
 
 public class TallMechEntity extends AbstractMechEntity {
 
-    private static final KnightLibAnim IDLE = KnightLibAnim.begin().thenLoop("animation.tall_mech.idle");
     private static final KnightLibAnim WALK = KnightLibAnim.begin().thenLoop("animation.tall_mech.walk");
-    private static final KnightLibAnim ATTACK = KnightLibAnim.begin().thenPlay("animation.tall_mech.attack");
-    private static final KnightLibAnim AIM = KnightLibAnim.begin().thenPlayAndHold("animation.tall_mech.aim").overridePreviousAnimation();
-    private static final KnightLibAnim AIM_OFF = KnightLibAnim.begin().thenPlay("animation.tall_mech.aim_off").overridePreviousAnimation().transition(5);
-    private static final KnightLibAnim SHOOT_HAND = KnightLibAnim.begin().thenPlay("animation.tall_mech.shoot_hand").additive();
-    private static final KnightLibAnim SPRINT = KnightLibAnim.begin().thenPlay("animation.tall_mech.sprint");
+    private static final KnightLibAnim RUN = KnightLibAnim.begin().thenLoop("animation.tall_mech.run");
+    private static final KnightLibAnim IDLE = KnightLibAnim.begin().thenLoop("animation.tall_mech.idle");
+    private static final KnightLibAnim JUMP = KnightLibAnim.begin().thenPlay("animation.tall_mech.jump");
+    private static final KnightLibAnim FALL = KnightLibAnim.begin().thenPlay("animation.tall_mech.fall");
+    private static final KnightLibAnim AIM_ON = KnightLibAnim.begin().thenPlayAndHold("animation.tall_mech.aim_on");
+    private static final KnightLibAnim AIM_OFF = KnightLibAnim.begin().thenPlay("animation.tall_mech.aim_off");
+    private static final KnightLibAnim ROCKET_UPGRADE_OFF = KnightLibAnim.begin().thenPlay("animation.tall_mech.rocket_upgrade_off");
+    private static final KnightLibAnim EXTRA_GUNS_UPGRADE_ON = KnightLibAnim.begin().thenPlay("animation.tall_mech.extra_guns_upgrade_on");
+    private static final KnightLibAnim EXTRA_GUNS_UPGRADE_OFF = KnightLibAnim.begin().thenPlay("animation.tall_mech.extra_guns_upgrade_off");
     private static final KnightLibAnim DEATH = KnightLibAnim.begin().thenPlay("animation.tall_mech.death");
-    private static final KnightLibAnim EXTRA_GUNS_UPGRADE = KnightLibAnim.begin().thenPlay("animation.tall_mech.extra_guns_upgrade");
-    private static final KnightLibAnim ROCKET_ABILITY = KnightLibAnim.begin().thenPlay("animation.tall_mech.rocket_ability");
-    private static final KnightLibAnim SHOOT = KnightLibAnim.begin().thenPlay("animation.tall_mech.shoot");
-    private static final KnightLibAnim DEACTIVATED = KnightLibAnim.begin().thenLoop("animation.tall_mech.deactivated");
     private static final KnightLibAnim ACTIVATE = KnightLibAnim.begin().thenPlayAndHold("animation.tall_mech.activate");
+    private static final KnightLibAnim DEACTIVATED = KnightLibAnim.begin().thenLoop("animation.tall_mech.deactivated");
+    private static final KnightLibAnim SHOOT = KnightLibAnim.begin().thenPlay("animation.tall_mech.shoot");
+    private static final KnightLibAnim SLEEPING = KnightLibAnim.begin().thenPlay("animation.tall_mech.sleeping");
+    private static final KnightLibAnim WAKE_UP_TRANSITION = KnightLibAnim.begin().thenPlay("animation.tall_mech.wake_up_transition");
+    private static final KnightLibAnim SLEEP_TRANSITION = KnightLibAnim.begin().thenPlay("animation.tall_mech.sleep_transition");
 
     public TallMechEntity(EntityType<? extends TallMechEntity> type, Level level) {
         super(type, level);
