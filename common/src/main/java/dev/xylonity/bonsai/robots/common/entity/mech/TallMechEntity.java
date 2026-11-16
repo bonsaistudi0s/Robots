@@ -44,20 +44,23 @@ public class TallMechEntity extends AbstractMechEntity {
     private static final KnightLibAnim WAKE_UP_TRANSITION = KnightLibAnim.begin().thenPlay("animation.tall_mech.wake_up_transition");
     private static final KnightLibAnim SLEEP_TRANSITION = KnightLibAnim.begin().thenPlay("animation.tall_mech.sleep_transition");
 
+    // walk 8.7 blocks per 1s loop and run 17.3 blocks per 0.5s loop
+    private static final MechLocomotion LOCOMOTION = new GroundMechLocomotion(8.7D, 1.0D, 17.3D, 0.5D, () -> RobotsConfig.TALL_MECH_SPRINT_SPEED_MULTIPLIER, () -> RobotsConfig.TALL_MECH_BACKWARD_SPEED_MULTIPLIER);
+
     public TallMechEntity(EntityType<? extends TallMechEntity> type, Level level) {
         super(type, level);
     }
 
     @Override
     public MechLocomotion getLocomotion() {
-        return GroundMechLocomotion.WALKING;
+        return LOCOMOTION;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
         return createMechAttributes()
                 .add(Attributes.MAX_HEALTH, RobotsConfig.TALL_MECH_MAX_HEALTH)
                 .add(Attributes.KNOCKBACK_RESISTANCE, RobotsConfig.TALL_MECH_KNOCKBACK_RESISTANCE)
-                .add(Attributes.MOVEMENT_SPEED, 0.4)
+                .add(Attributes.MOVEMENT_SPEED, 0.22165D)
                 .add(Attributes.ATTACK_DAMAGE, 12.0D);
     }
 
@@ -138,7 +141,7 @@ public class TallMechEntity extends AbstractMechEntity {
             return ACTIVATE;
         }
         if (state.isMoving()) {
-            return WALK;
+            return this.isSprinting() ? RUN : WALK;
         }
         else {
             return IDLE;
@@ -148,19 +151,29 @@ public class TallMechEntity extends AbstractMechEntity {
 
     @Override
     public void onAnimationKeyframe(KnightLibKeyframeEvent event) {
-        if (event.type() != KnightLibKeyframeEvent.Type.SOUND || !"animation.tall_mech.walk".equals(event.animation())) {
+        if (event.type() != KnightLibKeyframeEvent.Type.SOUND) {
+            return;
+        }
+
+        if ("animation.tall_mech.idle".equals(event.animation())) {
+            if ("idle".equals(event.payload())) {
+                this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), RobotsSounds.TALL_MECH_IDLE.get(), this.getSoundSource(), 1.0F, 1.0F, false);
+            }
+
+            return;
+        }
+
+        if (!("animation.tall_mech.walk".equals(event.animation()) || "animation.tall_mech.run".equals(event.animation()))) {
             return;
         }
 
         final SoundEvent sound = switch (event.payload()) {
-            case "walk_1", "walk_3" -> RobotsSounds.GENERIC_LEG_SWING.get();
-            case "walk_2", "walk_4" -> RobotsSounds.GENERIC_STEP.get();
+            case "walk_1" -> RobotsSounds.TALL_MECH_WALK_1.get();
+            case "walk_2" -> RobotsSounds.TALL_MECH_WALK_2.get();
             default -> null;
         };
         if (sound != null) {
             this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), sound, this.getSoundSource(), 1.0F, 1.0F, false);
-        }
-        if (sound == RobotsSounds.GENERIC_STEP.get()) {
             Robots.PROXY.onMechFootstep(this);
         }
 

@@ -15,7 +15,11 @@ public final class GroundMechLocomotion implements MechLocomotion {
 
     private final double blocksPerCycle;
     private final double cycleSeconds;
+
+    private final double sprintBlocksPerCycle;
+    private final double sprintCycleSeconds;
     private final DoubleSupplier sprintMultiplier;
+
     private final DoubleSupplier backwardMultiplier;
 
     public GroundMechLocomotion(double blocksPerCycle, double cycleSeconds, DoubleSupplier sprintMultiplier) {
@@ -23,12 +27,24 @@ public final class GroundMechLocomotion implements MechLocomotion {
     }
 
     public GroundMechLocomotion(double blocksPerCycle, double cycleSeconds, DoubleSupplier sprintMultiplier, DoubleSupplier backwardMultiplier) {
+        this(blocksPerCycle, cycleSeconds, 0, 0, sprintMultiplier, backwardMultiplier);
+    }
+
+    /**
+     * Ties the sprint animation to the ground speed like the walk one so the foot keeps up with the ground at any sprint multiplier
+     */
+    public GroundMechLocomotion(double blocksPerCycle, double cycleSeconds, double sprintBlocksPerCycle, double sprintCycleSeconds, DoubleSupplier sprintMultiplier, DoubleSupplier backwardMultiplier) {
         if (blocksPerCycle <= 0 || cycleSeconds <= 0) {
             throw new IllegalArgumentException("[Robots] Movement cycle distance and duration must be positive");
+        }
+        if (sprintBlocksPerCycle < 0 || sprintCycleSeconds < 0 || (sprintBlocksPerCycle > 0) != (sprintCycleSeconds > 0)) {
+            throw new IllegalArgumentException("[Robots] Sprint cycle distance and duration must be both positive or both zero");
         }
 
         this.blocksPerCycle = blocksPerCycle;
         this.cycleSeconds = cycleSeconds;
+        this.sprintBlocksPerCycle = sprintBlocksPerCycle;
+        this.sprintCycleSeconds = sprintCycleSeconds;
         this.sprintMultiplier = sprintMultiplier;
         this.backwardMultiplier = backwardMultiplier;
     }
@@ -104,6 +120,9 @@ public final class GroundMechLocomotion implements MechLocomotion {
         if (!canSprint(mech) || !mech.isSprinting()) {
             final double boost = mech.clientYawInitialized && mech.clientLegsReversed ? 1.1 : 1;
             return Math.min(3.0D, Math.max(0.25D, state.blocksPerSecond() * cycleSeconds / blocksPerCycle * boost));
+        }
+        if (sprintBlocksPerCycle > 0) {
+            return Math.min(3.0D, Math.max(0.25D, state.blocksPerSecond() * sprintCycleSeconds / sprintBlocksPerCycle));
         }
 
         final float friction = mech.getMovementSurfaceFriction();

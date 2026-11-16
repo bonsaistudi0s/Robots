@@ -35,11 +35,13 @@ public final class RobotsSounds {
     public static final ResourceEntry<SoundEvent> BOOSTER_ABILITY = register("booster_ability");
     public static final ResourceEntry<SoundEvent> GROUND_HIT_ABILITY = register("ground_hit_ability");
     public static final ResourceEntry<SoundEvent> ROCKET_ABILITY = register("rocket_ability");
+    public static final ResourceEntry<SoundEvent> ROCKET_LOCK_ON = register("rocket_lock_on");
     public static final ResourceEntry<SoundEvent> ROLL_ABILITY = register("roll_ability");
     public static final ResourceEntry<SoundEvent> AIM = register("aim");
     public static final ResourceEntry<SoundEvent> AIM_OFF = register("aim_off");
     public static final ResourceEntry<SoundEvent> GENERIC_DEATH = register("generic_death");
     public static final ResourceEntry<SoundEvent> GENERIC_ACTIVATE = register("generic_activate");
+    public static final ResourceEntry<SoundEvent> GENERIC_ACTIVATE_3 = register("generic_activate_3");
     public static final ResourceEntry<SoundEvent> GENERIC_HIT = register("generic_hit");
     public static final ResourceEntry<SoundEvent> GENERIC_HARD_HIT = register("generic_hard_hit");
     public static final ResourceEntry<SoundEvent> GENERIC_IMPACT = register("generic_impact");
@@ -50,6 +52,9 @@ public final class RobotsSounds {
     public static final ResourceEntry<SoundEvent> SLOW_LASER = register("slow_laser");
     public static final ResourceEntry<SoundEvent> SLOW_ZAP = register("slow_zap");
     public static final ResourceEntry<SoundEvent> ZAP = register("zap");
+    public static final ResourceEntry<SoundEvent> FLAME = register("flame");
+    public static final ResourceEntry<SoundEvent> SLEEP_START = register("sleep_start");
+    public static final ResourceEntry<SoundEvent> SLEEP_END = register("sleep_end");
     public static final ResourceEntry<SoundEvent> MINING_MECH_CLAW_OFF = register("mining_mech_claw_off");
     public static final ResourceEntry<SoundEvent> MINING_MECH_CLAW_ON = register("mining_mech_claw_on");
     public static final ResourceEntry<SoundEvent> MINING_MECH_DEATH = register("mining_mech_death");
@@ -64,7 +69,9 @@ public final class RobotsSounds {
     public static final ResourceEntry<SoundEvent> ROLLING_MECH_OPEN = register("rolling_mech_open");
     public static final ResourceEntry<SoundEvent> ROLLING_MECH_ROLL = register("rolling_mech_roll");
     public static final ResourceEntry<SoundEvent> ROLLING_MECH_WALK = register("rolling_mech_walk");
-    public static final ResourceEntry<SoundEvent> SHIELD_MECH_WALK = register("shield_mech_walk");
+    public static final ResourceEntry<SoundEvent> SHIELD_MECH_IDLE = register("shield_mech_idle");
+    public static final ResourceEntry<SoundEvent> SHIELD_MECH_WALK_1 = register("shield_mech_walk_1");
+    public static final ResourceEntry<SoundEvent> SHIELD_MECH_WALK_2 = register("shield_mech_walk_2");
     public static final ResourceEntry<SoundEvent> SUPPORT_BOT_ACTIVATE = register("support_bot_activate");
     public static final ResourceEntry<SoundEvent> SUPPORT_BOT_DEATH = register("support_bot_death");
     public static final ResourceEntry<SoundEvent> SUPPORT_BOT_HEAL = register("support_bot_heal");
@@ -73,7 +80,9 @@ public final class RobotsSounds {
     public static final ResourceEntry<SoundEvent> TALL_MECH_DEATH = register("tall_mech_death");
     public static final ResourceEntry<SoundEvent> TALL_MECH_IDLE = register("tall_mech_idle");
     public static final ResourceEntry<SoundEvent> TALL_MECH_JUMP = register("tall_mech_jump");
-    public static final ResourceEntry<SoundEvent> TALL_MECH_WALK = register("tall_mech_walk");
+    // public static final ResourceEntry<SoundEvent> TALL_MECH_WALK = register("tall_mech_walk");
+    public static final ResourceEntry<SoundEvent> TALL_MECH_WALK_1 = register("tall_mech_walk_1");
+    public static final ResourceEntry<SoundEvent> TALL_MECH_WALK_2 = register("tall_mech_walk_2");
     public static final ResourceEntry<SoundEvent> TANK_MECH_ACTIVATE = register("tank_mech_activate");
     public static final ResourceEntry<SoundEvent> TANK_MECH_DEATH = register("tank_mech_death");
     public static final ResourceEntry<SoundEvent> TANK_MECH_IDLE = register("tank_mech_idle");

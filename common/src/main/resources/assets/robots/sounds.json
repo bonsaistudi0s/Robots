@@ -124,6 +124,11 @@
       "robots:generic/abilities/rocket_ability_2"
     ]
   },
+  "rocket_lock_on": {
+    "sounds": [
+      "robots:generic/abilities/rocket_lock_on"
+    ]
+  },
   "roll_ability": {
     "sounds": [
       "robots:generic/abilities/roll_ability"
@@ -375,9 +380,14 @@
       "robots:tall_mech/tall_mech_jump"
     ]
   },
-  "tall_mech_walk": {
+  "tall_mech_walk_1": {
     "sounds": [
-      "robots:tall_mech/tall_mech_walk"
+      "robots:tall_mech/tall_mech_walk_1"
+    ]
+  },
+  "tall_mech_walk_2": {
+    "sounds": [
+      "robots:tall_mech/tall_mech_walk_2"
     ]
   },
   "tank_mech_activate": {
