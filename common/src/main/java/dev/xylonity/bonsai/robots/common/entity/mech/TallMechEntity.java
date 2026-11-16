@@ -78,11 +78,15 @@ public class TallMechEntity extends AbstractMechEntity {
 
     @Override
     public List<ResourceLocation> getSpecialAbilities() {
-        return List.of();
+        return List.of(RobotsAbilities.ELECTRIC_FIELD);
     }
 
     @Override
     public ResourceLocation getAbilityIcon(ResourceLocation abilityId) {
+        if (RobotsAbilities.ELECTRIC_FIELD.equals(abilityId)) {
+            return Robots.of("textures/entity/tank_mech/icons/electric_field_icon.png");
+        }
+
         return new ResourceLocation(abilityId.getNamespace(), "textures/entity/tall_mech/icons/" + abilityId.getPath() + "_icon.png");
     }
 

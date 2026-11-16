@@ -49,6 +49,8 @@ public class TankMechEntity extends AbstractMechEntity {
     private static final KnightLibAnim SHOOT = KnightLibAnim.begin().thenPlay("animation.tank_mech.shoot");
     private static final KnightLibAnim DEACTIVATED = KnightLibAnim.begin().thenLoop("animation.tank_mech.deactivated");
     private static final KnightLibAnim ACTIVATE = KnightLibAnim.begin().thenPlayAndHold("animation.tank_mech.activate");
+    private static final KnightLibAnim SLEEP = KnightLibAnim.begin().thenPlay("animation.tank_mech.sleep_transition").thenLoop("animation.tank_mech.sleeping");
+    private static final KnightLibAnim WAKE_UP = KnightLibAnim.begin().thenPlayAndHold("animation.tank_mech.wake_up_transition");
 
     private static final ResourceLocation MODEL = Robots.of("geo/tank_mech.geo.json");
     private static final ResourceLocation ANIMATIONS = Robots.of("animations/tank_mech.animation.json");
@@ -59,7 +61,7 @@ public class TankMechEntity extends AbstractMechEntity {
 
     private static final MechLocomotion LOCOMOTION = new GroundMechLocomotion(5.0D, 1.0D, () -> RobotsConfig.TANK_MECH_SPRINT_SPEED_MULTIPLIER, () -> RobotsConfig.TANK_MECH_BACKWARD_SPEED_MULTIPLIER);
     private static final MechCameraProfile CAMERA = new MechCameraProfile(4.6D, 0.2D, 1.35D, 2.8D, 0.1D, 1.1D,
-            0.9D, 0.55F, 1.0F, 0.75F, 22.5F
+            0.9D, 0.55F, 1.0F, 0.75F, MAX_TORSO_PITCH
     );
 
     private final BoneHitboxRig anchorRig = BoneHitboxRigs.geo(MODEL, ANIMATIONS);
@@ -70,7 +72,8 @@ public class TankMechEntity extends AbstractMechEntity {
 
     public static AttributeSupplier.Builder createAttributes() {
         return createMechAttributes()
-                .add(Attributes.MAX_HEALTH, 120.0D)
+                .add(Attributes.MAX_HEALTH, RobotsConfig.TANK_MECH_MAX_HEALTH)
+                .add(Attributes.KNOCKBACK_RESISTANCE, RobotsConfig.TANK_MECH_KNOCKBACK_RESISTANCE)
                 .add(Attributes.MOVEMENT_SPEED, 0.16225D)
                 .add(Attributes.ATTACK_DAMAGE, RobotsConfig.TANK_MECH_MELEE_DAMAGE);
     }
@@ -119,7 +122,7 @@ public class TankMechEntity extends AbstractMechEntity {
         }
         else if (RobotsAbilities.LAZER_SMALL.equals(abilityId) && phase == AbilityAnimationPhase.ACTIVATE) {
             this.playAnimation(SHOOT.controller("abilityController").duration(40));
-            this.playSound(RobotsSounds.LASER.get());
+            this.playSound(this.isElectricMode() ? RobotsSounds.ZAP.get() : RobotsSounds.LASER.get(), 1, 0.9f + this.random.nextFloat() * 0.2f);
         }
         else if (RobotsAbilities.LAZER_BIG.equals(abilityId)) {
             switch (phase) {
@@ -129,7 +132,7 @@ public class TankMechEntity extends AbstractMechEntity {
                 }
                 case ACTIVATE -> {
                     this.playAnimation(SHOOT_HAND.controller("abilityActionController").duration(4));
-                    this.playSound(RobotsSounds.SLOW_LASER.get());
+                    this.playSound(this.isElectricMode() ? RobotsSounds.SLOW_ZAP.get() : RobotsSounds.SLOW_LASER.get());
                 }
                 case AIM_OFF -> {
                     this.playAnimation(AIM_OFF.controller("abilityController").duration(9));
@@ -190,6 +193,11 @@ public class TankMechEntity extends AbstractMechEntity {
     }
 
     @Override
+    protected int getWakeUpDurationTicks() {
+        return 10;
+    }
+
+    @Override
     public void registerAnimationControllers(KnightLibAnimationControllerRegistrar controllers) {
         controllers.add(KnightLibAnimationController.of("movementController")
                 .selects(this::movementPredicate)
@@ -208,6 +216,12 @@ public class TankMechEntity extends AbstractMechEntity {
         }
         if (this.isActivating()) {
             return ACTIVATE;
+        }
+        if (this.isInSleepMode()) {
+            return SLEEP;
+        }
+        if (this.isWakingUp()) {
+            return WAKE_UP;
         }
         if (state.isMoving()) {
             return this.isSprinting() ? SPRINT : WALK;
