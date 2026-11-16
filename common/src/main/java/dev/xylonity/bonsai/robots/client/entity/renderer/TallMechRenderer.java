@@ -14,6 +14,7 @@ import net.minecraft.util.Mth;
 public class TallMechRenderer extends AbstractMechRenderer<TallMechEntity> {
 
     public static final ResourceLocation TEXTURE_LOCATION = Robots.of("textures/entity/tall_mech/tall_mech.png");
+    private static final ResourceLocation GLOW_TEXTURE = Robots.of("textures/entity/tall_mech/tall_mech_glow.png");
     private static final ResourceLocation ELECTRIC_FIELD = Robots.of("textures/entity/tall_mech/tall_mech_glow_electric.png");
 
     // The lower leg is a child of the upper leg, so moving the knee independently would apply the hip rotation twice
@@ -33,6 +34,7 @@ public class TallMechRenderer extends AbstractMechRenderer<TallMechEntity> {
     public TallMechRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, 1.5f);
         this.footLateralOffset = 11.0f / 16.0f;
+        addEmissiveLayer(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) || !hasSleepGlow(mech) ? null : GLOW_TEXTURE, this::sleepGlowTint);
         addRenderLayer(new GenericMechElectricFieldLayer<>(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) ? ELECTRIC_FIELD : null));
     }
 

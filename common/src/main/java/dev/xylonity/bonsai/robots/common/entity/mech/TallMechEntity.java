@@ -57,7 +57,7 @@ public class TallMechEntity extends AbstractMechEntity {
         return createMechAttributes()
                 .add(Attributes.MAX_HEALTH, RobotsConfig.TALL_MECH_MAX_HEALTH)
                 .add(Attributes.KNOCKBACK_RESISTANCE, RobotsConfig.TALL_MECH_KNOCKBACK_RESISTANCE)
-                .add(Attributes.MOVEMENT_SPEED, 0.2)
+                .add(Attributes.MOVEMENT_SPEED, 0.4)
                 .add(Attributes.ATTACK_DAMAGE, 12.0D);
     }
 
