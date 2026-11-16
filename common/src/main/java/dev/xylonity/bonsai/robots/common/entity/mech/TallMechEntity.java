@@ -5,6 +5,7 @@ import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
 import dev.xylonity.bonsai.robots.common.entity.movement.GroundMechLocomotion;
 import dev.xylonity.bonsai.robots.common.entity.movement.MechLocomotion;
 import dev.xylonity.bonsai.robots.common.entity.ability.AbilityAnimationPhase;
+import dev.xylonity.bonsai.robots.config.RobotsConfig;
 import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
 import dev.xylonity.bonsai.robots.registry.RobotsSounds;
 import dev.xylonity.knightlib.api.animation.*;
@@ -50,7 +51,8 @@ public class TallMechEntity extends AbstractMechEntity {
 
     public static AttributeSupplier.Builder createAttributes() {
         return createMechAttributes()
-                .add(Attributes.MAX_HEALTH, 120.0D)
+                .add(Attributes.MAX_HEALTH, RobotsConfig.TALL_MECH_MAX_HEALTH)
+                .add(Attributes.KNOCKBACK_RESISTANCE, RobotsConfig.TALL_MECH_KNOCKBACK_RESISTANCE)
                 .add(Attributes.MOVEMENT_SPEED, 0.2)
                 .add(Attributes.ATTACK_DAMAGE, 12.0D);
     }
