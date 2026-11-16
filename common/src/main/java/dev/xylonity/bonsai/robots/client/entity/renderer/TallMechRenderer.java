@@ -2,6 +2,8 @@ package dev.xylonity.bonsai.robots.client.entity.renderer;
 
 import dev.xylonity.bonsai.robots.Robots;
 import dev.xylonity.bonsai.robots.client.entity.layer.GenericMechElectricFieldLayer;
+import dev.xylonity.bonsai.robots.client.entity.layer.GenericMechRiderLayer;
+import dev.xylonity.bonsai.robots.common.entity.AbstractMechEntity;
 import dev.xylonity.bonsai.robots.common.entity.mech.TallMechEntity;
 import dev.xylonity.bonsai.robots.registry.RobotsAbilities;
 import dev.xylonity.knightlib.client.animation.KnightLibAnimationSource;
@@ -10,6 +12,7 @@ import dev.xylonity.knightlib.client.animation.model.KnightLibModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 
 public class TallMechRenderer extends AbstractMechRenderer<TallMechEntity> {
 
@@ -34,6 +37,7 @@ public class TallMechRenderer extends AbstractMechRenderer<TallMechEntity> {
     public TallMechRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, 1.5f);
         this.footLateralOffset = 11.0f / 16.0f;
+        addRenderLayer(new GenericMechRiderLayer<>());
         addEmissiveLayer(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) || !hasSleepGlow(mech) ? null : GLOW_TEXTURE, this::sleepGlowTint);
         addRenderLayer(new GenericMechElectricFieldLayer<>(mech -> mech.isAbilityToggled(RobotsAbilities.ELECTRIC_FIELD) ? ELECTRIC_FIELD : null));
     }
@@ -41,6 +45,25 @@ public class TallMechRenderer extends AbstractMechRenderer<TallMechEntity> {
     @Override
     protected boolean supportsLegIk() {
         return true;
+    }
+
+    /// TODO: refactor into super class
+    @Override
+    protected void setupPose(TallMechEntity entity, KnightLibModel model, float partialTick) {
+        super.setupPose(entity, model, partialTick);
+
+        if (model.hasBone(TORSO_BONE)) {
+            final Player pilot = entity.getPilot();
+            if (pilot != null) {
+                entity.clientTorsoPitch = Mth.clamp(pilot.getViewXRot(partialTick), -AbstractMechEntity.MAX_TORSO_PITCH, AbstractMechEntity.MAX_TORSO_PITCH);
+                entity.clientPitchInitialized = true;
+            }
+            if (entity.clientPitchInitialized) {
+                model.applyRotation(TORSO_BONE, entity.clientTorsoPitch, 0f, 0f);
+            }
+
+        }
+
     }
 
     @Override
