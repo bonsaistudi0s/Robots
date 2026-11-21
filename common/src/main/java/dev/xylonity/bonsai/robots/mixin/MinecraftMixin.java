@@ -1,8 +1,10 @@
 package dev.xylonity.bonsai.robots.mixin;
 
 import dev.xylonity.bonsai.robots.client.util.RobotsClientUtil;
+import dev.xylonity.bonsai.robots.common.block.BatteryCellBlock;
 import dev.xylonity.bonsai.robots.common.entity.ability.AbilityManager;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.phys.BlockHitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -27,6 +29,11 @@ public class MinecraftMixin {
     // Right click
     @Inject(method = "startUseItem", at = @At("HEAD"), cancellable = true)
     private void robots$secondaryAbilityOnUse(CallbackInfo ci) {
+        final Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level != null && minecraft.hitResult instanceof BlockHitResult hit && minecraft.level.getBlockState(hit.getBlockPos()).getBlock() instanceof BatteryCellBlock) {
+            return;
+        }
+
         if (RobotsClientUtil.handleMouseAbility(AbilityManager.SECONDARY_SLOT)) {
             ci.cancel();
         }
